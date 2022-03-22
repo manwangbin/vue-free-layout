@@ -1,3 +1,7 @@
+@-drawer-shadow-color: #90909060;
+@-widget-selected-shadow-color: #9a9a9a;
+@-widget-selected-border-color: rgb(24,160,251);
+
 .design {
   position: relative;
   .ruler_container {
@@ -8,12 +12,27 @@
 
   .drawer {
     position: absolute;
-    box-shadow: 0 0 6px #90909060;
+    box-shadow: 0 0 6px @-drawer-shadow-color; 
+
+    .selected {
+      cursor: pointer;
+      box-shadow: 0px 0px 4px @-widget-selected-shadow-color;
+      z-index: 99;
+
+      * {
+        border: none;
+      }
+    }
+
+    .dragging {
+      cursor: move;
+      z-index: 100;
+      box-shadow: 0px 0px 2px @-widget-selected-shadow-color;
+    }
   }
 
   .drag_container {
     position: absolute;
-    cursor: pointer;
 
     * {
       position: absolute;
@@ -23,6 +42,9 @@
         right: 0px;
         width: 100%;
         height: 100%;
+        margin: 0px;
+        padding: 0px;
+        box-sizing: border-box;
       }
 
       .controller {
@@ -32,5 +54,98 @@
         border-radius: 0px 0px 4px 4px;
       }
     }
+
+    .cover {
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      padding: 0px;
+      margin: 0px;
+      left: 0px;
+      top: 0px;
+      box-sizing: border-box;
+
+      &:hover {
+        border: 1px solid @-widget-selected-border-color;
+      }
+    }
+
+    .moving {
+      background-color: rgba(255, 100, 100, 0.05);
+    }
+  }
+
+  .moving {
+    transition-duration: 0.2s;
+    transition-timing-function: ease;
+    z-index: 101;
+    box-shadow: 0px 0px 6px @-widget-selected-shadow-color;
+  }
+
+  .size-border-container {
+    position: absolute;
+    z-index: 101;
+    margin: 0px;
+    border: 0px;
+
+    .border {
+      background: @-widget-selected-border-color;
+    }
+  }
+
+  .size-border-h {
+    height: 8px;
+    cursor: row-resize;
+    .border {
+      margin: 3px 0px;
+      height: 2px;
+      width: 100%
+    }
+  }
+
+  .size-border-v {
+    width: 8px;
+    cursor: col-resize;
+    .border {
+      margin: 0px 3px;
+      width: 2px;
+      height: 100%
+    }
+  }
+
+  .size-border-corn {
+    position: absolute;
+    z-index: 101;
+    width: 12px;
+    height: 12px;
+
+    .quart {
+      margin: 2px;
+      width: 8px;
+      height: 8px;
+      background-color: #fff;
+      box-sizing: border-box;
+      border: solid 1px @-widget-selected-border-color;
+    }
+  }
+
+  .nesw-resize {
+    cursor: nesw-resize;
+  }
+
+  .nwse-resize {
+    cursor: nwse-resize;
+  }
+}
+
+.design-container {
+  .add-weidget {
+    position:absolute;
+    // box-shadow: 0px 0px 6px #909090;
+    border: 1px solid #909090;
+    z-index: 999;
+    background-color: #fff;
+    box-sizing: border-box;
+    cursor: move;
   }
 }

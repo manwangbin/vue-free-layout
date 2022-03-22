@@ -1,4 +1,6 @@
 /* eslint-disable */
+declare module "*.svg";
+
 declare module '*.vue' {
   import type { DefineComponent } from 'vue'
   const component: DefineComponent<{}, {}, any>
