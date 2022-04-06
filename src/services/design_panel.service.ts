@@ -7,9 +7,9 @@ interface Modal {
   contentRect: {x: number, y: number, width: number, height: number}
 }
 
-export default class DesignContainerService {
+export default class DesignPanelService {
   // eslint-disable-next-line symbol-description
-  static token: InjectionKey<DesignContainerService> = Symbol();
+  static token: InjectionKey<DesignPanelService> = Symbol();
 
   modal: Modal
 
@@ -19,14 +19,23 @@ export default class DesignContainerService {
 
   layoutService?: LayoutService;
 
+  dragingHandler = (event: MouseEvent) => {
+    this.dragMoveHandler(event)
+  }
+
+  dropHandler = (event: MouseEvent) => {
+    this.dragEndHanlder(event)
+  }
+
   constructor () {
-    provide(DesignContainerService.token, this)
+    provide(DesignPanelService.token, this)
     this.modal = reactive({
       contentRect: { x: 0, y: 0, width: 0, height: 0 }
     })
   }
 
   createWidgetHandler (widget: Widget, event: MouseEvent) {
+    console.log('widget', event)
     this.orgpoint = { x: event.x, y: event.y }
     let statrtx = event.x - widget.width / 2
     if (statrtx < 0) {
@@ -43,8 +52,8 @@ export default class DesignContainerService {
 
     this.modal.addWdiget = { ...widget, x: statrtx, y: starty, state: -1, start: { x: statrtx, y: starty }, end: { x: endx, y: endy } }
     this.orgwidget = { ...this.modal.addWdiget, start: { ...this.modal.addWdiget.start }, end: { ...this.modal.addWdiget.end } }
-    window.addEventListener('mousemove', (event) => this.dragMoveHandler(event), true)
-    window.addEventListener('mouseup', (event) => this.dragEndHanlder(event), true)
+    window.addEventListener('mousemove', this.dragingHandler, true)
+    window.addEventListener('mouseup', this.dropHandler, true)
   }
 
   dragMoveHandler (event: MouseEvent) {
@@ -77,8 +86,8 @@ export default class DesignContainerService {
   }
 
   dragEndHanlder (event: MouseEvent) {
-    window.removeEventListener('mousemove', (event) => this.dragMoveHandler(event), true)
-    window.removeEventListener('mouseup', (event) => this.dragEndHanlder(event), true)
+    window.removeEventListener('mousemove', this.dragingHandler, true)
+    window.removeEventListener('mouseup', this.dropHandler, true)
 
     if (this.inContentArea() && this.layoutService) {
       const widget = { ...this.modal.addWdiget } as Widget

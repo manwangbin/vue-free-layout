@@ -1,10 +1,10 @@
-import DesignContainerService from '@/services/design_container.service'
+import DesignContainerService from '@/services/design_panel.service'
 import { defineComponent, h, onMounted, ref, Ref } from 'vue'
 import DragContainer from './drag_container'
 import './style.less'
 
 export default defineComponent({
-  name: 'DesignContainer',
+  name: 'DesignPanel',
 
   setup () {
     const maxWidth:Ref<number> = ref(0)
@@ -12,9 +12,8 @@ export default defineComponent({
     const service = new DesignContainerService()
 
     onMounted(() => {
-      if (designContainer.value) {
-        designContainer.value.addEventListener('resize', resizeHandler, true)
-      }
+      window.addEventListener('resize', resizeHandler, true)
+      resizeHandler()
     })
 
     const resizeHandler = () => {

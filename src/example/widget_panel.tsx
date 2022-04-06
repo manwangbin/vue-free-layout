@@ -1,4 +1,4 @@
-import DesignContainerService from '@/services/design_container.service'
+import DesignContainerService from '@/services/design_panel.service'
 import { defineComponent, h, inject } from 'vue'
 import { nanoid } from 'nanoid'
 

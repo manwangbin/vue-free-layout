@@ -37,7 +37,7 @@ export default defineComponent({
     }
   },
 
-  emits: ['state-changed', 'selected-widget', 'position-move'],
+  emits: ['state-changed', 'selected-widget', 'position-move', 'begin-drag', 'draging', 'drag-end'],
   setup (props, { emit }) {
     const container: Ref<HTMLElement | undefined> = ref()
     onMounted(() => {
@@ -55,14 +55,15 @@ export default defineComponent({
     const onMouseDown = (event: MouseEvent) => {
       event.preventDefault()
       event.stopPropagation()
-      if (props.widget.state === 0) {
-        emit('selected-widget', { id: props.widget.id })
-      }
 
       dragStartPosition.x = event.clientX
       dragStartPosition.y = event.clientY
       orgPosition.x = props.widget.x
       orgPosition.y = props.widget.y
+
+      if (!event.altKey) {
+        emit('begin-drag', { ...event } as DragEvent)
+      }
 
       window.addEventListener('mousemove', dragHandler, true)
       window.addEventListener('mouseup', dragEndHandler, true)
@@ -79,12 +80,12 @@ export default defineComponent({
     const lnt = computed(() => {
       return props.miny + props.widget.margin[0]
     })
+
     const dragHandler = (event: MouseEvent) => {
       event.preventDefault()
       event.stopPropagation()
-      if (props.widget.state !== 3) {
-        emit('state-changed', 3)
-      }
+
+      emit('draging', { ...event } as DragEvent)
       const hspan = event.clientX - dragStartPosition.x
       const vspan = event.clientY - dragStartPosition.y
 
@@ -107,7 +108,7 @@ export default defineComponent({
       event.stopPropagation()
       window.removeEventListener('mousemove', dragHandler, true)
       window.removeEventListener('mouseup', dragEndHandler, true)
-      emit('state-changed', { id: props.widget.id, state: 1 })
+      emit('drag-end', props.widget)
     }
 
     const containerClass = computed(() => {

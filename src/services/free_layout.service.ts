@@ -2,19 +2,14 @@ import { DesignWidget, Point, Widget } from '@/types'
 import LayoutService from './layout.service'
 
 export default class FreeLayoutService extends LayoutService {
-  layoutx = 0
-
-  layouty = 0
-
   relayoutTime: number|undefined;
 
-  // eslint-disable-next-line no-useless-constructor
   constructor (public lineBegin: number, public lineEnd: number, public lineMaxWidth: number, public topBegin: number) {
     super()
   }
 
   addNewWidget (widget: Widget) {
-    this.modal.placeWidgets.push({
+    const newWidget = {
       ...widget,
       start: {
         x: widget.x - this.calcuMargin(widget.margin, ['l']),
@@ -24,8 +19,10 @@ export default class FreeLayoutService extends LayoutService {
         x: widget.x + widget.width + this.calcuMargin(widget.margin, ['r']),
         y: widget.y + widget.height + this.calcuMargin(widget.margin, ['b'])
       },
-      state: 0
-    })
+      state: 1
+    }
+    this.modal.placeWidgets.push(newWidget)
+    this.modal.selected = newWidget
   }
 
   /**
@@ -43,15 +40,23 @@ export default class FreeLayoutService extends LayoutService {
     this.relayout(widget)
   }
 
-  moveWidget (widget: DesignWidget, point: Point) {
+  moveWidget (widget: DesignWidget, point: Point, checkJoin = true) {
     widget.x = point.x
     widget.y = point.y
     widget.start = { x: (widget.x - this.calcuMargin(widget.margin, ['l'])), y: (widget.y - this.calcuMargin(widget.margin, ['t'])) }
     widget.end = { x: (widget.x + widget.width + this.calcuMargin(widget.margin, ['r'])), y: (widget.y + widget.height + this.calcuMargin(widget.margin, ['b'])) }
 
-    this.relayout(widget)
+    if (checkJoin) {
+      this.relayout(widget)
+    }
   }
 
+  /**
+   * 拖动一个新的控件到这个面板上
+   *
+   * @param begin
+   * @param end
+   */
   layoutAddWidget (begin: Point, end: Point): void {
     if (this.relayoutTime) {
       clearTimeout(this.relayoutTime)
@@ -60,6 +65,15 @@ export default class FreeLayoutService extends LayoutService {
     this.relayoutTime = setTimeout(() => {
       this.dorelayoutAddedWidget(begin, end)
     }, 50)
+  }
+
+  /**
+   * 拖动结束
+   *
+   * @param widget
+   */
+  dragEnd (widget: DesignWidget) {
+    widget.state = 1
   }
 
   relayout (widget: DesignWidget) {
@@ -90,7 +104,6 @@ export default class FreeLayoutService extends LayoutService {
 
   dorelayoutAddedWidget (begin: Point, end: Point) {
     const joinedWidgets = this.findJoinWidgetsByPoints(begin, end)
-    console.log('find add relayout', begin, end, joinedWidgets)
     if (joinedWidgets && joinedWidgets.length > 0) {
       joinedWidgets.sort((a, b) => a.y - b.y)
 
@@ -105,9 +118,9 @@ export default class FreeLayoutService extends LayoutService {
     }
   }
 
-  layoutWidgets (children: Array<Widget>) {
-    this.layoutx = this.lineBegin
-    this.layouty = this.topBegin
+  initWidgets (children: Array<Widget>) {
+    // this.layoutx = this.lineBegin
+    // this.layouty = this.topBegin
     this.modal.placeWidgets.splice(0, this.modal.placeWidgets.length)
 
     const positionedWidgets = children.filter(widget => widget.x > 0 || widget.y > 0)
@@ -152,10 +165,10 @@ export default class FreeLayoutService extends LayoutService {
   }
 
   addWidget (widget: Widget) {
-    if (widget.x === 0 && widget.y === 0) {
-      widget.x = this.layoutx
-      widget.y = this.layouty
-    }
+    // if (widget.x === 0 && widget.y === 0) {
+    //   widget.x = this.layoutx
+    //   widget.y = this.layouty
+    // }
 
     let layoutx = widget.x - this.calcuMargin(widget.margin, ['l'])
     let layouty = widget.y - this.calcuMargin(widget.margin, ['t'])

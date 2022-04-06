@@ -1,8 +1,7 @@
-import { Point, Widget } from '@/types'
-import { defineComponent, h, inject, onMounted, PropType, ref, Ref } from 'vue'
+import { DesignWidget, Point } from '@/types'
+import { defineComponent, h, inject, PropType } from 'vue'
 import DragContainer from './drag_container'
 import LayoutService from '../services/layout.service'
-import DesignContainerService from '@/services/design_container.service'
 
 export default defineComponent({
   name: 'DesignDrawer',
@@ -34,7 +33,7 @@ export default defineComponent({
     }
   },
 
-  emits: ['selected-widget', 'state-changed', 'position-move'],
+  emits: ['selected-widget', 'state-changed', 'position-move', 'drag-end'],
   setup (props, { emit, slots }) {
     const layoutSerivce = inject(LayoutService.token) as LayoutService
     const minx = props.padding.length === 4 ? props.padding[3] : props.padding[0]
@@ -51,9 +50,10 @@ export default defineComponent({
                 minx: minx,
                 maxx: maxx,
                 miny: props.padding[0],
-                onSelectedWidget: (data: any) => emit('selected-widget', data),
-                onStateChanged: (data: any) => emit('state-changed', data),
-                onPositionMove: (data: Point) => emit('position-move', data)
+                onSelectedWidget: (data: DesignWidget) => emit('selected-widget', data),
+                onStateChanged: (data: DesignWidget) => emit('state-changed', data),
+                onPositionMove: (data: Point) => emit('position-move', data),
+                onDragEnd: (widget: DesignWidget) => emit('drag-end', widget)
               },
               {
                 default: () => slots.item && slots.item(child)

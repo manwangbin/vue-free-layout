@@ -1,5 +1,5 @@
 import DesignCanvase from '@/components/design_canvase'
-import DesignContainer from '@/components/design_container'
+import DesignPanel from '@/components/free_design'
 import { Widget } from '@/types'
 import { defineComponent, h, ref, Ref } from 'vue'
 import './style.less'
@@ -9,7 +9,7 @@ export default defineComponent({
   name: 'ExamplePanel',
 
   components: {
-    DesignContainer,
+    DesignPanel,
     DesignCanvase,
     WidgetPanel
   },
@@ -29,7 +29,7 @@ export default defineComponent({
     ])
 
     return () => (
-      <DesignContainer class='container'
+      <DesignPanel class='container' style="margin:50px 100px; background: #ffffff;"
         v-slots={{
           item: (widget:any) => <input ></input>
         }}
@@ -37,6 +37,7 @@ export default defineComponent({
         <WidgetPanel class='widgets' />
         <DesignCanvase
           class="panel"
+          layout={ 'lt' }
           width={595}
           height={842}
           v-model:children={children.value}
@@ -45,7 +46,7 @@ export default defineComponent({
             item: (widget:any) => <input ></input>
           }}
         />
-      </DesignContainer>
+      </DesignPanel>
     )
   }
 })

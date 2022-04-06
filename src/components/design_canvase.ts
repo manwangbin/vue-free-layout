@@ -5,7 +5,9 @@ import FreeLayout from './design_free_layout'
 import FreeLayoutService from '../services/free_layout.service'
 import SizeBox from './size_box'
 import './style.less'
-import DesignContainerService from '@/services/design_container.service'
+import DesignContainerService from '@/services/design_panel.service'
+import LayoutService from '@/services/layout.service'
+import LtLayoutSrevice from '@/services/lt_layout.service'
 
 interface PageInfo {
   width: number,
@@ -24,7 +26,7 @@ export default defineComponent({
   props: {
     layout: {
       type: String as PropType<'lt' | 'ct' | 'abslout'>,
-      default: 'lt'
+      default: 'abslout'
     },
 
     // 页面分多少格
@@ -85,37 +87,32 @@ export default defineComponent({
   },
 
   setup (props, { emit, slots }) {
-    const selected: Ref<DesignWidget | undefined> = ref()
     const container: Ref<HTMLElement | null> = ref(null)
     const pageInfo = reactive({ width: 0, height: 0, hstart: RULTER_HEIGHT * 2, vstart: RULTER_HEIGHT * 3 } as PageInfo)
 
     const lineBegin = props.padding.length === 4 ? props.padding[3] : props.padding[0]
     const lineEnd = props.width - (props.padding.length === 4 ? props.padding[1] : props.padding[0])
     const lineMax = lineEnd - lineBegin
-    const service = new FreeLayoutService(lineBegin, lineEnd, lineMax, props.padding[0])
+    const service: LayoutService = props.layout === 'abslout' ? new FreeLayoutService(lineBegin, lineEnd, lineMax, props.padding[0]) : new LtLayoutSrevice(lineBegin, lineEnd, lineMax, props.padding[0])
     const desingContainerService = inject(DesignContainerService.token) as DesignContainerService
     desingContainerService.layoutService = service
-
     let sizeChangeTimer: number | undefined
-    let relayoutTimer: number | undefined
 
     onMounted(() => {
-      if (container.value) {
-        container.value.addEventListener('resize', windowsResizeHandler)
-        windowsResizeHandler()
-      }
+      window.addEventListener('resize', windowsResizeHandler, true)
+      windowsResizeHandler()
     })
 
     const widgetSelectedHandler = (event: any) => {
-      if (selected.value) {
-        selected.value.state = 0
-        selected.value = undefined
+      if (service.modal.selected) {
+        service.modal.selected.state = 0
+        service.modal.selected = undefined
       }
 
       const findChild = service.modal.placeWidgets.find((item: DesignWidget) => item.id === event.id)
       if (findChild) {
         findChild.state = 1
-        selected.value = findChild
+        service.modal.selected = findChild
       }
     }
 
@@ -127,10 +124,14 @@ export default defineComponent({
     }
 
     const widgetMoveHandler = (position: Point) => {
-      if (selected.value) {
-        service.moveWidget(selected.value, position)
-        // emit('update:children', children)
+      if (service.modal.selected) {
+        service.moveWidget(service.modal.selected, position)
       }
+    }
+
+    const widgetEndHandler = (widget: DesignWidget) => {
+      service.dragEnd(widget)
+      // emit('update:children', service.modal.placeWidgets)
     }
 
     const windowsResizeHandler = () => {
@@ -139,6 +140,7 @@ export default defineComponent({
         if (elStyle) {
           pageInfo.width = parseInt(elStyle.width)
           pageInfo.height = parseInt(elStyle.height)
+
           if (sizeChangeTimer) {
             clearTimeout(sizeChangeTimer)
           }
@@ -151,20 +153,19 @@ export default defineComponent({
     }
 
     const selectedWidgetSizeChanageHandler = (size: any) => {
-      if (selected.value && selected.value.id) {
+      if (service.modal.selected && service.modal.selected.id) {
         const children = service.modal.placeWidgets
-        const findChild = children.find(item => item.id === selected.value?.id) as any
+        const findChild = children.find(item => item.id === service.modal.selected?.id) as any
         if (findChild) {
           service.resizeWidget(findChild, size)
-          // emit('update:children', children)
         }
       }
     }
 
     const clickBackgroundHandler = () => {
-      if (selected.value) {
-        selected.value.state = 0
-        selected.value = undefined
+      if (service.modal.selected) {
+        service.modal.selected.state = 0
+        service.modal.selected = undefined
       }
     }
 
@@ -189,7 +190,7 @@ export default defineComponent({
     }
 
     const relayoutChildren = () => {
-      service.layoutWidgets(props.children)
+      service.initWidgets(props.children)
       emit('update:children', service.modal.placeWidgets)
     }
 
@@ -205,9 +206,10 @@ export default defineComponent({
             top: pageInfo.vstart + 'px'
           },
           padding: props.padding,
-          onSelectedWidget: (data: any) => widgetSelectedHandler(data),
-          onStateChanged: (changedEvent: any) => widgetStateChanagedHandler(changedEvent),
-          onPositionMove: (data: any) => widgetMoveHandler(data)
+          onSelectedWidget: (data: DesignWidget) => widgetSelectedHandler(data),
+          onStateChanged: (changedEvent: DesignWidget) => widgetStateChanagedHandler(changedEvent),
+          onPositionMove: (data: Point) => widgetMoveHandler(data),
+          onDragEnd: (widget: DesignWidget) => widgetEndHandler(widget)
         },
         {
           item: (widget: any) => slots.item && slots.item(widget)
@@ -286,11 +288,11 @@ export default defineComponent({
     }
 
     const renderSizeBorders = () => {
-      if (selected.value && selected.value.state === 1) {
+      if (service.modal.selected && service.modal.selected.state === 1) {
         return h(
           SizeBox,
           {
-            widget: selected.value,
+            widget: service.modal.selected,
             minx: lineBegin,
             maxx: lineEnd,
             miny: props.padding[0],
