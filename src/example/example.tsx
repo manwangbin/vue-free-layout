@@ -1,7 +1,8 @@
 import DesignCanvase from '@/components/design_canvase'
 import DesignPanel from '@/components/free_design'
 import { Widget } from '@/types'
-import { defineComponent, h, ref, Ref } from 'vue'
+import { defineComponent, ref, Ref } from 'vue'
+import Header from './header'
 import './style.less'
 import WidgetPanel from './widget_panel'
 
@@ -29,23 +30,17 @@ export default defineComponent({
     ])
 
     return () => (
-      <DesignPanel class='container' style="margin:50px 100px; background: #ffffff;"
+      <DesignPanel
+        style="margin:50px 100px;height: 400px;"
+        width={595}
+        height={842}
         v-slots={{
+          header: () => <Header />,
+          left: () => <WidgetPanel />,
+          right: () => <div style="width:200px; background: #ffffff"/>,
           item: (widget:any) => <input ></input>
         }}
         >
-        <WidgetPanel class='widgets' />
-        <DesignCanvase
-          class="panel"
-          layout={ 'lt' }
-          width={595}
-          height={842}
-          v-model:children={children.value}
-          padding={[10]}
-          v-slots={{
-            item: (widget:any) => <input ></input>
-          }}
-        />
       </DesignPanel>
     )
   }

@@ -1,4 +1,4 @@
-import DesignContainerService from '@/services/design_panel.service'
+import DesignContainerService from '@/services/design.service'
 import { defineComponent, h, inject } from 'vue'
 import { nanoid } from 'nanoid'
 
@@ -11,7 +11,7 @@ export default defineComponent({
       return h(
         'div',
         {
-          style: { width: '100px', height: '50px', lineHeight: '50px', textAlign: 'center', background: '#a0a0f0' },
+          style: { lineHeight: '50px', textAlign: 'center' },
           onmousedown: (event: MouseEvent) => containerService.createWidgetHandler({ id: nanoid(), tag: 'input', x: 0, y: 0, width: 120, height: 60, margin: [0] }, event)
         },
         ['测试控件']
@@ -23,7 +23,9 @@ export default defineComponent({
   render () {
     return h(
       'div',
-      {},
+      {
+        style: { width: '200px', background: '#FFFFFF' }
+      },
       [
         this.renderWidgets()
       ]

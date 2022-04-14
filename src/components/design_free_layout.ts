@@ -46,7 +46,7 @@ export default defineComponent({
             return h(
               DragContainer,
               {
-                widget: child,
+                value: child,
                 minx: minx,
                 maxx: maxx,
                 miny: props.padding[0],
@@ -62,7 +62,7 @@ export default defineComponent({
           } else {
             return h(DragContainer,
               {
-                widget: child,
+                value: child,
                 minx: minx,
                 maxx: maxx,
                 miny: props.padding[0]

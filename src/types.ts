@@ -15,8 +15,6 @@ export interface Widget {
 }
 
 export interface DesignWidget extends Widget{
-  start: Point;
-  end: Point;
   // -1:未添加； 0: 普通状态；1: 选择状态； 2:编辑状态; 3: draging; 4: auto resize
   state: number;
 }

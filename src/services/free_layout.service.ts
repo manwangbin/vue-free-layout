@@ -34,8 +34,6 @@ export default class FreeLayoutService extends LayoutService {
     widget.y = newSize.y
     widget.width = newSize.width
     widget.height = newSize.height
-    widget.start = { x: (widget.x - this.calcuMargin(widget.margin, ['l'])), y: (widget.y - this.calcuMargin(widget.margin, ['t'])) }
-    widget.end = { x: (widget.x + widget.width + this.calcuMargin(widget.margin, ['r'])), y: (widget.y + widget.height + this.calcuMargin(widget.margin, ['b'])) }
 
     this.relayout(widget)
   }
@@ -43,8 +41,6 @@ export default class FreeLayoutService extends LayoutService {
   moveWidget (widget: DesignWidget, point: Point, checkJoin = true) {
     widget.x = point.x
     widget.y = point.y
-    widget.start = { x: (widget.x - this.calcuMargin(widget.margin, ['l'])), y: (widget.y - this.calcuMargin(widget.margin, ['t'])) }
-    widget.end = { x: (widget.x + widget.width + this.calcuMargin(widget.margin, ['r'])), y: (widget.y + widget.height + this.calcuMargin(widget.margin, ['b'])) }
 
     if (checkJoin) {
       this.relayout(widget)
@@ -87,35 +83,35 @@ export default class FreeLayoutService extends LayoutService {
   }
 
   dorelayoutWidget (widget: DesignWidget) {
-    const joinedWidgets = this.findJoinWidgets(widget)
-    if (joinedWidgets && joinedWidgets.length > 0) {
-      joinedWidgets.sort((a, b) => a.y - b.y)
+    // const joinedWidgets = this.findJoinWidgets(widget)
+    // if (joinedWidgets && joinedWidgets.length > 0) {
+    //   joinedWidgets.sort((a, b) => a.y - b.y)
 
-      for (let i = 0; i < joinedWidgets.length; i++) {
-        joinedWidgets[i].state = 4
-        joinedWidgets[i].y = widget.end.y + 1 + this.calcuMargin(joinedWidgets[i].margin, ['t'])
-        joinedWidgets[i].start.y = widget.end.y + 1
-        joinedWidgets[i].end.y = joinedWidgets[i].start.y + joinedWidgets[i].height + this.calcuMargin(joinedWidgets[i].margin, ['t', 'b'])
+    //   for (let i = 0; i < joinedWidgets.length; i++) {
+    //     joinedWidgets[i].state = 4
+    //     joinedWidgets[i].y = widget.end.y + 1 + this.calcuMargin(joinedWidgets[i].margin, ['t'])
+    //     joinedWidgets[i].start.y = widget.end.y + 1
+    //     joinedWidgets[i].end.y = joinedWidgets[i].start.y + joinedWidgets[i].height + this.calcuMargin(joinedWidgets[i].margin, ['t', 'b'])
 
-        this.dorelayoutWidget(joinedWidgets[i])
-      }
-    }
+    //     this.dorelayoutWidget(joinedWidgets[i])
+    //   }
+    // }
   }
 
   dorelayoutAddedWidget (begin: Point, end: Point) {
     const joinedWidgets = this.findJoinWidgetsByPoints(begin, end)
-    if (joinedWidgets && joinedWidgets.length > 0) {
-      joinedWidgets.sort((a, b) => a.y - b.y)
+    // if (joinedWidgets && joinedWidgets.length > 0) {
+    //   joinedWidgets.sort((a, b) => a.y - b.y)
 
-      for (let i = 0; i < joinedWidgets.length; i++) {
-        joinedWidgets[i].state = 4
-        joinedWidgets[i].y = end.y + 1 + this.calcuMargin(joinedWidgets[i].margin, ['t'])
-        joinedWidgets[i].start.y = end.y + 1
-        joinedWidgets[i].end.y = joinedWidgets[i].start.y + joinedWidgets[i].height + this.calcuMargin(joinedWidgets[i].margin, ['t', 'b'])
+    //   for (let i = 0; i < joinedWidgets.length; i++) {
+    //     joinedWidgets[i].state = 4
+    //     joinedWidgets[i].y = end.y + 1 + this.calcuMargin(joinedWidgets[i].margin, ['t'])
+    //     joinedWidgets[i].start.y = end.y + 1
+    //     joinedWidgets[i].end.y = joinedWidgets[i].start.y + joinedWidgets[i].height + this.calcuMargin(joinedWidgets[i].margin, ['t', 'b'])
 
-        this.dorelayoutWidget(joinedWidgets[i])
-      }
-    }
+    //     this.dorelayoutWidget(joinedWidgets[i])
+    //   }
+    // }
   }
 
   initWidgets (children: Array<Widget>) {
@@ -198,7 +194,7 @@ export default class FreeLayoutService extends LayoutService {
     if (point) {
       widget.x = point.x + this.calcuMargin(widget.margin, ['l'])
       widget.y = point.y + this.calcuMargin(widget.margin, ['t'])
-      this.modal.placeWidgets.push({ ...widget, start: { x: point.x, y: point.y }, end: { x: (point.x + widgetWidth), y: (point.y + widgetHeight) }, state: 0 })
+      // this.modal.placeWidgets.push({ ...widget, start: { x: point.x, y: point.y }, end: { x: (point.x + widgetWidth), y: (point.y + widgetHeight) }, state: 0 })
     }
   }
 
@@ -212,24 +208,26 @@ export default class FreeLayoutService extends LayoutService {
    * @param method 1: 水平优先布局； 2: 垂直优先布局
    */
   findArea (x: number, y: number, width: number, height: number, method: number): Point|undefined {
-    let state = -1
-    do {
-      const result = this.checkArea(x, y, width, height)
-      state = result.state
-      if (state === 0) {
-        return { x: x, y: y } as Point
-      } else if (state === 1 && result.widget) {
-        if (method === 1) {
-          x = result.widget.end.x + 1
-          if ((x + width) > this.lineEnd) {
-            x = this.lineBegin
-            y += 1
-          }
-        } else {
-          y += result.widget.end.y + 1
-        }
-      }
-    } while (state !== 0)
+    const state = -1
+    // do {
+    //   const result = this.checkArea(x, y, width, height)
+    //   state = result.state
+    //   if (state === 0) {
+    //     return { x: x, y: y } as Point
+    //   } else if (state === 1 && result.widget) {
+    //     if (method === 1) {
+    //       x = result.widget.end.x + 1
+    //       if ((x + width) > this.lineEnd) {
+    //         x = this.lineBegin
+    //         y += 1
+    //       }
+    //     } else {
+    //       y += result.widget.end.y + 1
+    //     }
+    //   }
+    // } while (state !== 0)
+
+    return undefined
   }
 
   /**
@@ -244,27 +242,31 @@ export default class FreeLayoutService extends LayoutService {
     for (let i = 0; i < this.modal.placeWidgets.length; i++) {
       const item = this.modal.placeWidgets[i]
 
-      if (Math.max(x, item.start.x) < Math.min((x + width), item.end.x) &&
-        Math.max(y, item.start.y) < Math.min((y + height), item.end.y)) {
-        return { state: 1, widget: item }
-      }
+      // if (Math.max(x, item.start.x) < Math.min((x + width), item.end.x) &&
+      //   Math.max(y, item.start.y) < Math.min((y + height), item.end.y)) {
+      //   return { state: 1, widget: item }
+      // }
     }
     return { state: 0 }
   }
 
   findJoinWidgets (widget: DesignWidget) {
-    return this.modal.placeWidgets.filter(item => {
-      if (widget.id === item.id) {
-        return false
-      }
+    // return this.modal.placeWidgets.filter(item => {
+    //   if (widget.id === item.id) {
+    //     return false
+    //   }
 
-      return Math.max(widget.start.x, item.start.x) < Math.min(widget.end.x, item.end.x) && Math.max(widget.start.y, item.start.y) < Math.min(widget.end.y, item.end.y)
-    })
+    //   return Math.max(widget.start.x, item.start.x) < Math.min(widget.end.x, item.end.x) && Math.max(widget.start.y, item.start.y) < Math.min(widget.end.y, item.end.y)
+    // })
+
+    return null
   }
 
   findJoinWidgetsByPoints (begin:Point, end: Point) {
-    return this.modal.placeWidgets.filter(item => {
-      return Math.max(begin.x, item.start.x) < Math.min(end.x, item.end.x) && Math.max(begin.y, item.start.y) < Math.min(end.y, item.end.y)
-    })
+    // return this.modal.placeWidgets.filter(item => {
+    //   return Math.max(begin.x, item.start.x) < Math.min(end.x, item.end.x) && Math.max(begin.y, item.start.y) < Math.min(end.y, item.end.y)
+    // })
+
+    return null
   }
 }

@@ -1,38 +1,78 @@
+@-background-color: #EEEFF0;
+@-header-background: #ffffff;
 @-drawer-shadow-color: #90909060;
 @-widget-selected-shadow-color: #9a9a9a;
 @-widget-selected-border-color: rgb(24,160,251);
 
 .design {
   position: relative;
-  .ruler_container {
-    position: absolute;
-    left: 0px;
-    top: 0px;
+  background-color: @-background-color;
+  display: flex;
+  flex-direction: column;
+
+  .header {
+    width: 100%;
+    height: 50px;
+    background-color: @-header-background;
   }
 
-  .drawer {
-    position: absolute;
-    box-shadow: 0 0 6px @-drawer-shadow-color; 
+  .content {
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
 
-    .selected {
-      cursor: pointer;
-      box-shadow: 0px 0px 4px @-widget-selected-shadow-color;
-      z-index: 99;
+    .body {
+      flex: 1;
+      // position: absolute;
+      overflow: auto;
 
-      * {
-        border: none;
+      .ruler_container {
+        position: absolute;
+        z-index: 1000;
       }
-    }
 
-    .dragging {
-      cursor: move;
-      z-index: 100;
-      box-shadow: 0px 0px 2px @-widget-selected-shadow-color;
+      .canvase {
+        position: relative;
+        left: 0px;
+        top: 0px;
+        transform-origin: left top;
+          
+        .drawer {
+          position: absolute;
+          box-shadow: 0 0 6px @-drawer-shadow-color; 
+      
+          .selected {
+            cursor: pointer;
+            box-shadow: 0px 0px 4px @-widget-selected-shadow-color;
+            z-index: 99;
+      
+            * {
+              border: none;
+            }
+          }
+      
+          .dragging {
+            cursor: move;
+            z-index: 100;
+            box-shadow: 0px 0px 2px @-widget-selected-shadow-color;
+          }
+        }
+
+        .selected_area {
+          position: absolute;
+          z-index: 1000;
+          background: rgba(24,160,251, 0.1);
+          border: 1px dashed rgba(24,160,251, 0.8);
+        }
+      }
     }
   }
 
   .drag_container {
     position: absolute;
+    transform-origin: center;
 
     * {
       position: absolute;
@@ -73,6 +113,15 @@
     .moving {
       background-color: rgba(255, 100, 100, 0.05);
     }
+  }
+
+  .dragging {
+    cursor: move;
+    z-index: 999;
+    box-shadow: 0px 0px 6px @-widget-selected-shadow-color;
+
+    transition: 0.1s left, 0.1s top;
+    transition-timing-function: ease;
   }
 
   .moving {
@@ -136,20 +185,11 @@
   .nwse-resize {
     cursor: nwse-resize;
   }
-}
 
-.design-container {
-  width: 100%;
-  height: 100%;
-  
-  position: relative;
-  .add-weidget {
-    position:absolute;
-    // box-shadow: 0px 0px 6px #909090;
-    border: 1px solid #909090;
-    z-index: 999;
-    background-color: #fff;
-    box-sizing: border-box;
+  .size-cover {
+    position: absolute;
+    z-index: 102;
     cursor: move;
+    background: rgba(24,160,251, 0.05);
   }
 }

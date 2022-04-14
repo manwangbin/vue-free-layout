@@ -1,16 +1,17 @@
-import { defineComponent, h, onMounted, PropType, reactive, ref, watch } from 'vue'
+import DesignService from '@/services/design.service'
+import { defineComponent, h, inject, onMounted, PropType, reactive, ref, watch } from 'vue'
 
 export default defineComponent({
   name: 'CRuler',
 
   props: {
-    scale: {
+    width: {
       type: Number,
       required: true
     },
 
-    unit: {
-      type: String as PropType<'px' | 'mm' | 'cm'>,
+    height: {
+      type: Number,
       required: true
     },
 
@@ -19,13 +20,18 @@ export default defineComponent({
       required: true
     },
 
-    width: {
+    offset: {
       type: Number,
       required: true
     },
 
-    height: {
+    scale: {
       type: Number,
+      required: true
+    },
+
+    unit: {
+      type: String as PropType<'px' | 'mm' | 'cm'>,
       required: true
     },
 
@@ -55,14 +61,13 @@ export default defineComponent({
       canvasContext: null as CanvasRenderingContext2D | null
     })
     const canvas = ref<HTMLCanvasElement | null>(null)
-
     onMounted(() => {
       state.canvasContext = canvas.value && canvas.value.getContext('2d')
       updateCanvasContext()
       drawCavaseRuler()
     })
 
-    watch([() => props.width, () => props.height, () => props.start], () => {
+    watch([() => props.width, () => props.height, () => props.start, () => props.scale, () => props.offset], () => {
       updateCanvasContext()
       drawCavaseRuler()
     })
@@ -72,6 +77,7 @@ export default defineComponent({
         // 比例宽高
         canvas.value.width = props.width
         canvas.value.height = props.height
+
         const ctx = state.canvasContext
         if (ctx) {
           ctx.font = `${12}px -apple-system, "Helvetica Neue", ".SFNSText-Regular", "SF UI Text", Arial, "PingFang SC", "Hiragino Sans GB",
@@ -93,37 +99,36 @@ export default defineComponent({
 
     const drawCavaseRuler = () => {
       const ctx = state.canvasContext
-      if (ctx) {
-        const { scale, width, height, start, h, backgroundColor, rulerColorLight, rulerColorDark } = props
-
-        // 缩放ctx, 以简化计算
-        ctx.scale(scale, scale)
-        ctx.clearRect(0, 0, width, height)
+      if (ctx && canvas.value) {
+        const { scale, h, backgroundColor, rulerColorLight, rulerColorDark } = props
+        ctx.clearRect(0, 0, canvas.value.width, canvas.value.height)
 
         // 1. 画标尺底色
         ctx.fillStyle = backgroundColor
-        ctx.fillRect(0, 0, width, height)
+        ctx.fillRect(0, 0, canvas.value.width, canvas.value.height)
 
         const gridSize = getGridSize(scale) // 每小格表示的宽度
         const gridSize10 = gridSize * 10 // 每大格表示的宽度
         const gridPixel = gridSize * scale
         const gridPixel10 = gridSize10 * scale
 
-        let position = start
+        let position = props.start - props.offset
+        const minPos = h ? props.height : props.width
         // 绘制短间隔
         ctx.beginPath()
         ctx.strokeStyle = rulerColorLight
-        if (start > gridSize) {
-          position = start - gridPixel
-          while (position > 0) {
-            drawLine(ctx, h, position, h ? height : width, false)
-            position -= gridPixel
-          }
+        position = props.start - gridPixel - props.offset
+        while (position > minPos) {
+          drawLine(ctx, h, position, h ? props.height : props.width, false)
+          position -= gridPixel
         }
 
-        position = start + gridPixel
-        while (h ? position < width : position < height) {
-          drawLine(ctx, h, position, h ? height : width, false)
+        position = props.start + gridPixel - props.offset
+        while (position < minPos) {
+          position += gridPixel
+        }
+        while (h ? position < canvas.value.width : position < canvas.value.height) {
+          drawLine(ctx, h, position, h ? canvas.value.height : canvas.value.width, false)
           position += gridPixel
         }
 
@@ -138,22 +143,23 @@ export default defineComponent({
         // 长间隔和短间隔需要两次绘制，才可以完成不同颜色的设置；分开放到两个for循环是为了节省性能，因为如果放到一个for循环的话，每次循环都会重新绘制操作dom
         // 绘制长间隔和文字
         let value = 0
-        position = start
-        if (start > gridPixel10) {
-          while (position > 0) {
-            position -= gridPixel10
-            value -= gridSize10
-            drawLine(ctx, h, position, h ? height : width)
-            drawText(ctx, h, position, h ? height : width, value)
-          }
-
-          position = start
-          value = 0
+        position = props.start - props.offset
+        while (position > minPos) {
+          position -= gridPixel10
+          value -= gridSize10
+          drawLine(ctx, h, position, h ? props.height : props.width)
+          drawText(ctx, h, position, h ? props.height : props.width, value)
         }
 
-        while (h ? position < width : position < height) {
-          drawLine(ctx, h, position, h ? height : width)
-          drawText(ctx, h, position, h ? height : width, value)
+        position = props.start - props.offset
+        value = 0
+        while (position < minPos) {
+          position += gridPixel10
+          value += gridSize10
+        }
+        while (h ? position < canvas.value.width : position < canvas.value.height) {
+          drawLine(ctx, h, position, h ? props.height : props.width)
+          drawText(ctx, h, position, h ? props.height : props.width, value)
 
           position += gridPixel10
           value += gridSize10
@@ -189,9 +195,7 @@ export default defineComponent({
       ctx.restore()
     }
 
-    return {
-      canvas
-    }
+    return { canvas }
   },
 
   render () {
@@ -199,7 +203,11 @@ export default defineComponent({
       'canvas',
       {
         ref: 'canvas',
-        style: { width: this.$props.width + 'px', height: this.$props.height + 'px' }
+        class: 'ruler_container',
+        style: {
+          width: this.$props.width + 'px',
+          height: this.$props.height + 'px'
+        }
       }
     )
   }
