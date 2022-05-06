@@ -1,7 +1,5 @@
 import { defineComponent } from '@vue/runtime-core'
-import { Ref, ref, watch } from 'vue'
-import { Widget } from './types'
-import Example from './example/example'
+import Example from './example'
 
 export default defineComponent({
   components: {

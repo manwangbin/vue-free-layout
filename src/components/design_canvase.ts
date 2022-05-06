@@ -1,5 +1,5 @@
-import { DesignWidget, Point, Widget } from '@/types'
-import { defineComponent, h, inject, onMounted, PropType, reactive, ref, Ref } from 'vue'
+import { Point, Widget } from '@/types'
+import { defineComponent, h, inject, onMounted, PropType, ref, Ref } from 'vue'
 import SizeBox from './size_box'
 
 import DesignService from '@/services/design.service'

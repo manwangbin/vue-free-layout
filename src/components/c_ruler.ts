@@ -1,5 +1,4 @@
-import DesignService from '@/services/design.service'
-import { defineComponent, h, inject, onMounted, PropType, reactive, ref, watch } from 'vue'
+import { defineComponent, h, onMounted, PropType, reactive, ref, watch } from 'vue'
 
 export default defineComponent({
   name: 'CRuler',
