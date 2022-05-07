@@ -5,7 +5,6 @@ import SizeBox from './size_box'
 import DesignService from '@/services/design.service'
 import DragContainer from './drag_container'
 import { computed } from '@vue/reactivity'
-import './style.less'
 
 export default defineComponent({
   name: 'DesignPanel',

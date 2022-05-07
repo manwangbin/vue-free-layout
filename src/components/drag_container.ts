@@ -2,7 +2,6 @@ import DesignService from '@/services/design.service'
 import DraggingService from '@/services/dragging.service'
 import { DesignWidget } from '@/types'
 import { computed, defineComponent, h, inject, onMounted, PropType, Ref, ref } from 'vue'
-import InlineSvg from 'vue-inline-svg'
 
 export default defineComponent({
   name: 'DragContainer',
@@ -51,30 +50,6 @@ export default defineComponent({
       }
     })
 
-    const renderActions = () => {
-      if (props.value.state === 0) {
-        return h(
-          'div',
-          {
-            class: 'controller',
-            style: {
-              left: '0px',
-              top: '0px'
-            }
-          },
-          [
-            h(InlineSvg, {
-              src: require('@/assets/delete.svg'),
-              style: {
-                width: '20px',
-                height: '20px'
-              }
-            })
-          ]
-        )
-      }
-    }
-
     const renderCover = () => {
       if (props.value.state !== 2) {
         return h(
@@ -107,7 +82,7 @@ export default defineComponent({
       return transform
     }
 
-    return { container, containerClass, renderActions, renderCover, cssTransform }
+    return { container, containerClass, renderCover, cssTransform }
   },
 
   render () {

@@ -1,15 +1,15 @@
 {
   "name": "vue3-free-layout",
-  "version": "0.1.4",
+  "version": "0.1.11",
   "private": false,
   "description": "[vue3+ts]拖动布局，自由拖动，标尺，放大缩小，控件之间的标尺",
   "license": "MIT",
   "author": {
     "name": "王宾"
   },
-  "main": "./dist/FreeLayout.umd.js",
-  "module": "./dist/FreeLayout.common.js",
-  "style": "./dist/FreeLayout.css",
+  "main": "./dist/vue3-free-layout.umd.js",
+  "module": "./dist/vue3-free-layout.esm.js",
+  "style": "./dist/css/index.css",
   "types": "./dist/index.d.ts",
   "files": [
     "dist/"
@@ -33,11 +33,12 @@
   ],
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "npm run build:lib && npm run build:dts",
-    "test:unit": "vue-cli-service test:unit",
+    "build": "npm run lint && npm run build:clean && npm run build:esm && npm run build:umd",
     "lint": "vue-cli-service lint",
-    "build:lib": "vue-cli-service build --target lib --name FreeLayout src/index.ts",
-    "build:dts": "tsc src/index.ts --declaration --declarationDir dist"
+    "build:esm": "npx rollup -c build/rollup.config.esm.js",
+    "build:umd": "npx rollup -c build/rollup.config.umd.js",
+    "build:clean": "rimraf ./dist",
+    "release": "sh scripts/new-release.sh"
   },
   "dependencies": {
     "core-js": "^3.8.3",
@@ -46,6 +47,9 @@
     "vue-inline-svg": "^3.1.0"
   },
   "devDependencies": {
+    "@rollup/plugin-image": "^2.1.1",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@svgr/rollup": "^6.2.1",
     "@types/jest": "^27.0.1",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
@@ -54,6 +58,7 @@
     "@vue/cli-plugin-typescript": "~5.0.0",
     "@vue/cli-plugin-unit-jest": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
+    "@vue/compiler-sfc": "^3.2.33",
     "@vue/eslint-config-standard": "^6.1.0",
     "@vue/eslint-config-typescript": "^9.1.0",
     "@vue/test-utils": "^2.0.0-0",
@@ -67,6 +72,13 @@
     "jest": "^27.0.5",
     "less": "^4.0.0",
     "less-loader": "^8.0.0",
+    "postcss": "^8.4.13",
+    "rimraf": "^3.0.2",
+    "rollup-plugin-css-only": "^3.1.0",
+    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-svg": "^2.0.0",
+    "rollup-plugin-typescript2": "^0.31.2",
+    "rollup-plugin-vue": "^6.0.0",
     "ts-jest": "^27.0.4",
     "typescript": "~4.5.5"
   },

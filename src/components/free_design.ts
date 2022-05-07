@@ -2,9 +2,9 @@ import { defineComponent, h, onMounted, ref, Ref, PropType } from 'vue'
 import DesignService from '@/services/design.service'
 import DesignCanvase from './design_canvase'
 import { getClientRect } from '@/util/size.util'
-import './style.less'
 import DragContainer from './drag_container'
 import CRuler from './c_ruler'
+import './style.less'
 
 const RULER_WIDTH = 24
 export default defineComponent({
@@ -48,7 +48,6 @@ export default defineComponent({
   },
 
   setup (props, { emit, slots }) {
-    // const maxWidth:Ref<number> = ref(0)
     const designContainer: Ref<HTMLElement | undefined> = ref()
     const designBody: Ref<HTMLElement | undefined> = ref()
     const service = new DesignService(props.width, props.height)
@@ -100,7 +99,11 @@ export default defineComponent({
           h: true,
           backgroundColor: props.backgroundColor,
           rulerColorLight: props.rulerColorLight,
-          rulerColorDark: props.rulerColorDark
+          rulerColorDark: props.rulerColorDark,
+          style: {
+            left: (service.modal.canvaseRect.x - service.modal.rect.x) + 'px',
+            top: (service.modal.canvaseRect.y - service.modal.rect.y) + 'px'
+          }
         }
       )
     }
@@ -118,7 +121,11 @@ export default defineComponent({
           backgroundColor: props.backgroundColor,
           rulerColorLight: props.rulerColorLight,
           rulerColorDark: props.rulerColorDark,
-          h: false
+          h: false,
+          style: {
+            left: (service.modal.canvaseRect.x - service.modal.rect.x) + 'px',
+            top: (service.modal.canvaseRect.y - service.modal.rect.y) + 'px'
+          }
         }
       )
     }
