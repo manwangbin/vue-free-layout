@@ -37,6 +37,7 @@ export default class DraggingService {
     this.orgPosition.clear()
     for (let i = 0; i < this.service.modal.selecteds.length; i++) {
       const widget = this.service.modal.selecteds[i]
+      widget.moveing = true
       this.orgPosition.set(widget.id, { x: widget.x, y: widget.y } as Point)
       if (this.service.layoutService) {
         this.service.layoutService.dragBegin(widget)
@@ -45,7 +46,6 @@ export default class DraggingService {
 
     window.addEventListener('mousemove', this.dragHandler, true)
     window.addEventListener('mouseup', this.dragEndHandler, true)
-    this.service.modal.moveing = true
   }
 
   dragHandler = (event: MouseEvent) => {
@@ -80,6 +80,7 @@ export default class DraggingService {
     this.modal.beginDragging = false
     for (let i = 0; i < this.service.modal.selecteds.length; i++) {
       const widget = this.service.modal.selecteds[i]
+      widget.moveing = false
       widget.state = 1
       if (this.service.layoutService) {
         this.service.layoutService.dragEnd(widget, this.orgPosition.get(widget.id)!)
@@ -87,6 +88,5 @@ export default class DraggingService {
     }
 
     this.orgPosition.clear()
-    this.service.modal.moveing = false
   }
 }

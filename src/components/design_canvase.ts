@@ -180,16 +180,21 @@ export default defineComponent({
     }
 
     const renderSizeBorders = () => {
-      if (!designService.modal.moveing &&
-        designService.modal.selecteds &&
-        designService.modal.selecteds.length > 0) {
-        return h(
-          SizeBox,
-          {
-            onSizeChanged: (event:any) => selectedWidgetSizeChanageHandler(event)
-          }
-        )
+      if (!designService.modal.selecteds ||
+        designService.modal.selecteds.length === 0) {
+        return
       }
+
+      if (designService.modal.selecteds.find(widget => (!widget.enableResize || widget.moveing))) {
+        return
+      }
+
+      return h(
+        SizeBox,
+        {
+          onSizeChanged: (event:any) => selectedWidgetSizeChanageHandler(event)
+        }
+      )
     }
 
     const renderChildren = () => {

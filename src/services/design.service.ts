@@ -4,15 +4,19 @@ import { inject, InjectionKey, provide, reactive } from 'vue'
 
 interface Modal {
   newWidget?: DesignWidget;
+  // 页面大小
   rect: { x: number, y: number, width: number, height: number };
-  canvaseRect: { x: number, y: number, width: number, height: number};
-  pageRect: { x: number, y: number, width: number, height: number, cwidth: number, cheight: number};
-
+  // 画板区域（标尺）大小
+  canvaseRect: { x: number, y: number, width: number, height: number };
+  // 画布大小
+  pageRect: { x: number, y: number, width: number, height: number, cwidth: number, cheight: number };
+  // 垂直滚动值
   scrollLeft: number;
+  // 水平滚动值
   scrollTop: number;
+  // 发大缩小倍数
   scale: number;
 
-  moveing: boolean;
   selecteds: Array<DesignWidget>;
   widgets: Array<DesignWidget>;
 }
@@ -170,10 +174,6 @@ export default class DesignService {
     this.selectedNewWidget = widget
     window.addEventListener('mousemove', this.newWidgetDragingRegistHandler, true)
     window.addEventListener('mouseup', this.newWidgetDropRegistHandler, true)
-
-    if (this.layoutService) {
-      this.layoutService.addNewWidget(widget)
-    }
   }
 
   newWidgetDragingRegistHandler = (event: MouseEvent) => {
@@ -190,7 +190,7 @@ export default class DesignService {
           y = 0
         }
 
-        this.modal.newWidget = { ...this.selectedNewWidget, x: x, y: y, state: -1 }
+        this.modal.newWidget = { ...this.selectedNewWidget, x: x, y: y, state: -1, moveing: false }
         this.selectedNewOrgState = { ...this.modal.newWidget }
       }
     } else if (this.selectedMousePoint && this.selectedNewOrgState) {
@@ -218,6 +218,9 @@ export default class DesignService {
 
       this.modal.widgets.push(widget)
       this.setSelected([widget])
+      if (this.layoutService) {
+        this.layoutService.addNewWidget(widget)
+      }
     }
 
     this.modal.newWidget = undefined

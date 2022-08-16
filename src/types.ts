@@ -20,11 +20,15 @@ export interface Widget extends Point {
   margin: Array<number>;
   // padding
   padding: Array<number>;
+  // 是否可以改变大小
+  enableResize: boolean;
 }
 
 export interface DesignWidget extends Widget{
   // -1:未添加； 0: 普通状态；1: 选择状态； 2:编辑状态; 3: draging; 4: auto resize
   state: number;
+  // 是否正在被拖动
+  moveing: boolean;
 }
 
 export abstract class LayoutService {
@@ -34,7 +38,7 @@ export abstract class LayoutService {
     this.designService = designService
   }
 
-  abstract addNewWidget(widget: Widget): void;
+  abstract addNewWidget(widget: DesignWidget): void;
 
   abstract dragBegin(widget: DesignWidget): void
 

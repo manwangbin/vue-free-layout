@@ -1,6 +1,6 @@
 {
   "name": "vue3-free-layout",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "private": false,
   "description": "[vue3+ts]拖动布局，自由拖动，标尺，放大缩小，控件之间的标尺",
   "license": "MIT",
