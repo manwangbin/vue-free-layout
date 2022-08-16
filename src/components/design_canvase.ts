@@ -7,15 +7,9 @@ import DragContainer from './drag_container'
 import { computed } from '@vue/reactivity'
 
 export default defineComponent({
-  name: 'DesignPanel',
+  name: 'DesignCanvase',
 
   props: {
-    layout: {
-      type: String as PropType<'lt' | 'ct' | 'abslout'>,
-      default: 'abslout'
-    },
-
-    // 页面分多少格
     square: {
       type: Number,
       default: -1
@@ -186,7 +180,9 @@ export default defineComponent({
     }
 
     const renderSizeBorders = () => {
-      if (designService.modal.selecteds && designService.modal.selecteds.length > 0) {
+      if (!designService.modal.moveing &&
+        designService.modal.selecteds &&
+        designService.modal.selecteds.length > 0) {
         return h(
           SizeBox,
           {

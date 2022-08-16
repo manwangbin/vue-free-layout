@@ -8,7 +8,7 @@ export default defineComponent({
 
   setup () {
     return () => (
-      <Example/>
+      <Example />
     )
   }
 })

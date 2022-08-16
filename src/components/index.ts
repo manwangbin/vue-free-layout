@@ -1,9 +1,9 @@
-import FreeDesign from './free_design'
+import DesignPanel from './design_panel'
 import { App, Plugin } from 'vue'
 
-FreeDesign.install = (app: App) => {
-  app.component(FreeDesign.name, FreeDesign)
+DesignPanel.install = (app: App) => {
+  app.component(DesignPanel.name, DesignPanel)
   return app
 }
 
-export default FreeDesign as typeof FreeDesign & Plugin
+export default DesignPanel as typeof DesignPanel & Plugin

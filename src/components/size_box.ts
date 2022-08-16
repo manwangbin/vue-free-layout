@@ -106,6 +106,12 @@ export default defineComponent({
     const onMouseUp = (event: MouseEvent) => {
       window.removeEventListener('mousemove', onMouseMoveHandler, true)
       window.removeEventListener('mouseup', onMouseUp, true)
+      if (designService.layoutService) {
+        for (let i = 0; i < designService.modal.selecteds.length; i++) {
+          const widget = designService.modal.selecteds[i]
+          designService.layoutService.resizedWidget(widget, oldWidgetPosition.get(widget.id)!)
+        }
+      }
 
       oldWidgetPosition.clear()
     }

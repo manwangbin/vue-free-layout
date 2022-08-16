@@ -60,6 +60,7 @@ export default defineComponent({
       canvasContext: null as CanvasRenderingContext2D | null
     })
     const canvas = ref<HTMLCanvasElement | null>(null)
+
     onMounted(() => {
       state.canvasContext = canvas.value && canvas.value.getContext('2d')
       updateCanvasContext()

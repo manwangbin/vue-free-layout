@@ -1,7 +1,6 @@
-import { DesignWidget, Point, Widget } from '@/types'
+import { DesignWidget, Point, Widget, LayoutService } from '@/types'
 import { computed } from '@vue/reactivity'
-import { InjectionKey, provide, reactive } from 'vue'
-import LayoutService from './layout.service'
+import { inject, InjectionKey, provide, reactive } from 'vue'
 
 interface Modal {
   newWidget?: DesignWidget;
@@ -13,6 +12,7 @@ interface Modal {
   scrollTop: number;
   scale: number;
 
+  moveing: boolean;
   selecteds: Array<DesignWidget>;
   widgets: Array<DesignWidget>;
 }
@@ -47,9 +47,9 @@ export default class DesignService {
     }
   }
 
-  constructor (width: number, height: number) {
+  constructor (width: number, height: number, layout?:string) {
     if (height === 0) {
-      height = 200
+      height = 500
     }
     provide(DesignService.token, this)
     this.modal = reactive({
@@ -62,12 +62,23 @@ export default class DesignService {
       scrollLeft: 0,
       scrollTop: 0,
 
+      moveing: false,
       selecteds: [],
       widgets: []
     })
 
     this.modal.canvaseRect.height = height + DesignService.SPAN * 2 / this.modal.scale
+
+    if (layout) {
+      const layoutService = inject(layout) as LayoutService
+      if (layoutService) {
+        layoutService.setDesignService(this)
+        this.layoutService = layoutService
+      }
+    }
   }
+
+  pxTorpx = computed(() => this.modal.pageRect.width / 750);
 
   addScale (value: number) {
     this.setScale(this.modal.scale + value)
@@ -159,6 +170,10 @@ export default class DesignService {
     this.selectedNewWidget = widget
     window.addEventListener('mousemove', this.newWidgetDragingRegistHandler, true)
     window.addEventListener('mouseup', this.newWidgetDropRegistHandler, true)
+
+    if (this.layoutService) {
+      this.layoutService.addNewWidget(widget)
+    }
   }
 
   newWidgetDragingRegistHandler = (event: MouseEvent) => {

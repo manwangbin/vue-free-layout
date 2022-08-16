@@ -1,9 +1,10 @@
-import { defineComponent, h, onMounted, ref, Ref, PropType } from 'vue'
+import { defineComponent, h, onMounted, ref, Ref, PropType, inject } from 'vue'
 import DesignService from '@/services/design.service'
 import DesignCanvase from './design_canvase'
 import { getClientRect } from '@/util/size.util'
 import DragContainer from './drag_container'
 import CRuler from './c_ruler'
+import { LayoutService } from '@/types'
 import './style.less'
 
 const RULER_WIDTH = 24
@@ -36,6 +37,11 @@ export default defineComponent({
       default: '#eeeff0'
     },
 
+    showRuler: {
+      type: Boolean,
+      default: false
+    },
+
     rulerColorLight: {
       type: String,
       default: '#9a9a9a'
@@ -44,13 +50,18 @@ export default defineComponent({
     rulerColorDark: {
       type: String,
       default: '#646464 '
+    },
+
+    layout: {
+      type: String,
+      default: ''
     }
   },
 
   setup (props, { emit, slots }) {
     const designContainer: Ref<HTMLElement | undefined> = ref()
     const designBody: Ref<HTMLElement | undefined> = ref()
-    const service = new DesignService(props.width, props.height)
+    const service = new DesignService(props.width, props.height, props.layout)
 
     onMounted(() => {
       window.addEventListener('resize', resizeHandler, true)
@@ -87,47 +98,51 @@ export default defineComponent({
     }
 
     const renderHRulter = () => {
-      return h(
-        CRuler,
-        {
-          width: service.modal.canvaseRect.width,
-          height: RULER_WIDTH,
-          start: (service.modal.pageRect.x * service.modal.scale),
-          offset: service.modal.scrollLeft,
-          scale: service.modal.scale,
-          unit: props.unit,
-          h: true,
-          backgroundColor: props.backgroundColor,
-          rulerColorLight: props.rulerColorLight,
-          rulerColorDark: props.rulerColorDark,
-          style: {
-            left: (service.modal.canvaseRect.x - service.modal.rect.x) + 'px',
-            top: (service.modal.canvaseRect.y - service.modal.rect.y) + 'px'
+      if (props.showRuler) {
+        return h(
+          CRuler,
+          {
+            width: service.modal.canvaseRect.width,
+            height: RULER_WIDTH,
+            start: (service.modal.pageRect.x * service.modal.scale),
+            offset: service.modal.scrollLeft,
+            scale: service.modal.scale,
+            unit: props.unit,
+            h: true,
+            backgroundColor: props.backgroundColor,
+            rulerColorLight: props.rulerColorLight,
+            rulerColorDark: props.rulerColorDark,
+            style: {
+              left: (service.modal.canvaseRect.x - service.modal.rect.x) + 'px',
+              top: (service.modal.canvaseRect.y - service.modal.rect.y) + 'px'
+            }
           }
-        }
-      )
+        )
+      }
     }
 
     const renderVRulter = () => {
-      return h(
-        CRuler,
-        {
-          width: RULER_WIDTH,
-          height: service.modal.canvaseRect.height,
-          start: (service.modal.pageRect.y * service.modal.scale),
-          offset: service.modal.scrollTop,
-          scale: service.modal.scale,
-          unit: props.unit,
-          backgroundColor: props.backgroundColor,
-          rulerColorLight: props.rulerColorLight,
-          rulerColorDark: props.rulerColorDark,
-          h: false,
-          style: {
-            left: (service.modal.canvaseRect.x - service.modal.rect.x) + 'px',
-            top: (service.modal.canvaseRect.y - service.modal.rect.y) + 'px'
+      if (props.showRuler) {
+        return h(
+          CRuler,
+          {
+            width: RULER_WIDTH,
+            height: service.modal.canvaseRect.height,
+            start: (service.modal.pageRect.y * service.modal.scale),
+            offset: service.modal.scrollTop,
+            scale: service.modal.scale,
+            unit: props.unit,
+            backgroundColor: props.backgroundColor,
+            rulerColorLight: props.rulerColorLight,
+            rulerColorDark: props.rulerColorDark,
+            h: false,
+            style: {
+              left: (service.modal.canvaseRect.x - service.modal.rect.x) + 'px',
+              top: (service.modal.canvaseRect.y - service.modal.rect.y) + 'px'
+            }
           }
-        }
-      )
+        )
+      }
     }
 
     const renderBody = () => {

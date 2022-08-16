@@ -5,6 +5,7 @@ import DesignService from './design.service'
 interface Modal {
   beginDragging: boolean;
 }
+
 export default class DraggingService {
   modal: Modal
   dragStartPosition: Point;
@@ -37,10 +38,14 @@ export default class DraggingService {
     for (let i = 0; i < this.service.modal.selecteds.length; i++) {
       const widget = this.service.modal.selecteds[i]
       this.orgPosition.set(widget.id, { x: widget.x, y: widget.y } as Point)
+      if (this.service.layoutService) {
+        this.service.layoutService.dragBegin(widget)
+      }
     }
 
     window.addEventListener('mousemove', this.dragHandler, true)
     window.addEventListener('mouseup', this.dragEndHandler, true)
+    this.service.modal.moveing = true
   }
 
   dragHandler = (event: MouseEvent) => {
@@ -72,10 +77,16 @@ export default class DraggingService {
     window.removeEventListener('mousemove', this.dragHandler, true)
     window.removeEventListener('mouseup', this.dragEndHandler, true)
 
-    this.orgPosition.clear()
     this.modal.beginDragging = false
     for (let i = 0; i < this.service.modal.selecteds.length; i++) {
-      this.service.modal.selecteds[i].state = 1
+      const widget = this.service.modal.selecteds[i]
+      widget.state = 1
+      if (this.service.layoutService) {
+        this.service.layoutService.dragEnd(widget, this.orgPosition.get(widget.id)!)
+      }
     }
+
+    this.orgPosition.clear()
+    this.service.modal.moveing = false
   }
 }
