@@ -12,15 +12,13 @@
     "forceConsistentCasingInFileNames": true,
     "useDefineForClassFields": true,
     "sourceMap": true,
-    "baseUrl": ".",
+    "baseUrl": "./",
     "outDir": "./dist",
-    "types": [
-      "webpack-env",
-      "jest"
-    ],
+    "types": ["vite/client", "node", "jest"],
     "paths": {
       "@/*": [
-        "src/*"
+        "src/*",
+        "examples/*"
       ]
     },
     "lib": [
@@ -31,9 +29,14 @@
     ]
   },
   "include": [
-    "src/**/*.ts"
+    "examples/*.ts",
+    "examples/*.tsx",
+    "src/*.ts",
+    "src/**/*.ts",
+    "typings/shims-vue.d.ts"
   ],
   "exclude": [
     "node_modules"
   ]
+
 }

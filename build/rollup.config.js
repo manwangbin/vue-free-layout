@@ -5,7 +5,9 @@ import vuePlugin from 'rollup-plugin-vue'
 // 如果依赖模块中存在 es 模块，需要使用 @rollup/plugin-node-resolve 插件进行转换
 import nodeResolve from '@rollup/plugin-node-resolve'
 import postcss from 'rollup-plugin-postcss'
-import css from 'rollup-plugin-css-only'
+import postcssImport from 'postcss-import'
+import commonjs from '@rollup/plugin-commonjs'
+import { terser } from 'rollup-plugin-terser'
 
 const file = (type) => `dist/${name}.${type}.js`
 
@@ -35,9 +37,15 @@ export default {
     vuePlugin(),
     postcss({
       extensions: ['.pcss', '.less', '.css'],
-      extract: false
+      extract: true,
+      plugins: [require('autoprefixer'),postcssImport()]
     }),
-    css({ output: 'index.css' })
+    commonjs({
+      include: [
+          "node_modules/**",
+          "node_modules/**/*"
+      ]
+    })
   ],
   external: ['vue'] // 依赖模块
 }

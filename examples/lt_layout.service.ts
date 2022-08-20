@@ -1,25 +1,25 @@
-import { LayoutService, DesignWidget } from '@/types'
+import { DesignWidget, Point } from '@/types'
 
-export default class LtLayoutService extends LayoutService {
+export default class LtLayoutService {
   relayout () {
     let top = 10
-    if (this.designService.modal.widgets) {
-      for (let i = 0; i < this.designService.modal.widgets.length; i++) {
-        const widget = this.designService.modal.widgets[i]
-        widget.x = 10
-        widget.y = top
+    // if (this.designService.modal.widgets) {
+    //   for (let i = 0; i < this.designService.modal.widgets.length; i++) {
+    //     const widget = this.designService.modal.widgets[i]
+    //     widget.x = 10
+    //     widget.y = top
 
-        top += (widget.height + 10)
-      }
-    }
+    //     top += (widget.height + 10)
+    //   }
+    // }
   }
 
   addNewWidget (widget: DesignWidget) {
-    widget.width = this.designService.modal.pageRect.width - 20
-    widget.height = 20
-    widget.enableResize = false
+    // widget.width = this.designService.modal.pageRect.width - 20
+    // widget.height = 20
+    // widget.enableResize = false
     this.relayout()
-    console.log('add new widget', widget, this.designService.modal.widgets)
+    // console.log('add new widget', widget, this.designService.modal.widgets)
   }
 
   dragBegin (widget: DesignWidget) {

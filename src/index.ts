@@ -1,12 +1,10 @@
-import './components/style.less'
 import DesignPanel from './components'
-import { Point, Widget, LayoutService } from './types'
-import DesignService from './services/design.service'
+import { Point, Widget, DesignWidget, DesignPanelRef } from './types'
 
 export {
   DesignPanel,
   Point,
   Widget,
-  DesignService,
-  LayoutService
+  DesignWidget,
+  DesignPanelRef
 }

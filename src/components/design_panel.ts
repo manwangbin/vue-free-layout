@@ -1,11 +1,11 @@
-import { defineComponent, h, onMounted, ref, Ref, PropType, inject } from 'vue'
+import { DesignWidget, Widget } from './../types'
+import { defineComponent, h, onMounted, ref, Ref, PropType } from 'vue'
 import DesignService from '@/services/design.service'
 import DesignCanvase from './design_canvase'
 import { getClientRect } from '@/util/size.util'
 import DragContainer from './drag_container'
 import CRuler from './c_ruler'
-import { LayoutService } from '@/types'
-import './style.less'
+import '../style.less'
 
 const RULER_WIDTH = 24
 export default defineComponent({
@@ -50,18 +50,33 @@ export default defineComponent({
     rulerColorDark: {
       type: String,
       default: '#646464 '
-    },
-
-    layout: {
-      type: String,
-      default: ''
     }
   },
 
+  emits: ['page-resized', 'added', 'deleted', 'drag-start', 'draging', 'drag-end', 'resize-start', 'resizeing', 'resize-end'],
   setup (props, { emit, slots }) {
     const designContainer: Ref<HTMLElement | undefined> = ref()
     const designBody: Ref<HTMLElement | undefined> = ref()
-    const service = new DesignService(props.width, props.height, props.layout)
+    const service = new DesignService(props.width, props.height, emit)
+
+    /**
+     * 添加新的控件
+     * 
+     * @param widget 
+     */
+    const createWidget = (widget: Widget) => {
+      service.createWidgetHandler(widget)
+      emit('added', widget)
+    }
+
+    /**
+     * 获取当前页面的weidgets
+     * 
+     * @returns 
+     */
+    const getPageWidgets = (): Array<DesignWidget> => {
+      return service.modal.widgets;
+    }
 
     onMounted(() => {
       window.addEventListener('resize', resizeHandler, true)
@@ -151,7 +166,13 @@ export default defineComponent({
         {
           class: 'canvase',
           scale: service.modal.scale,
-          ...props
+          ...props,
+          onDraging: (widget: DesignWidget) => emit('draging', widget),
+          onDragStart: (widget: DesignWidget) => emit('drag-start', widget),
+          onDragEnd: (widget: DesignWidget) => emit('drag-end', widget),
+          onResizeStart: (widget: DesignWidget) => emit('resize-start', widget),
+          onResizeing: (widget: DesignWidget) => emit('resizeing', widget),
+          onResizeEnd: (widget: DesignWidget) => emit('resize-end', widget)
         },
         {
           item: slots.item
@@ -167,7 +188,7 @@ export default defineComponent({
       }
     }
 
-    return { designContainer, designBody, service, renderHRulter, renderVRulter, renderBody, renderAddWdiget, mouseWheelHandler }
+    return { designContainer, designBody, service, createWidget, getPageWidgets, renderHRulter, renderVRulter, renderBody, renderAddWdiget, mouseWheelHandler }
   },
 
   render () {

@@ -1,4 +1,4 @@
-import { Point, Widget } from '@/types'
+import { DesignWidget, Point, Widget } from '@/types'
 import { defineComponent, h, inject, onMounted, PropType, ref, Ref } from 'vue'
 import SizeBox from './size_box'
 
@@ -51,6 +51,7 @@ export default defineComponent({
     }
   },
 
+  emits: ['drag-start', 'draging', 'drag-end', 'resize-start', 'resizeing', 'resize-end'],
   setup (props, { emit, slots }) {
     const drawer: Ref<HTMLElement | null> = ref(null)
 
@@ -170,7 +171,10 @@ export default defineComponent({
         return designService.modal.widgets.map(widget => h(
           DragContainer,
           {
-            value: widget
+            value: widget,
+            onDraging: (widget: DesignWidget) => emit('draging', widget),
+            onDragStart: (widget: DesignWidget) => emit('drag-start', widget),
+            onDragEnd: (widget: DesignWidget) => emit('drag-end', widget)
           },
           {
             default: () => [slots.item && slots.item(widget)]
@@ -192,7 +196,13 @@ export default defineComponent({
       return h(
         SizeBox,
         {
-          onSizeChanged: (event:any) => selectedWidgetSizeChanageHandler(event)
+          onSizeChanged: (event: any) => selectedWidgetSizeChanageHandler(event),
+          onDraging: (widget: DesignWidget) => emit('draging', widget),
+          onDragStart: (widget: DesignWidget) => emit('drag-start', widget),
+          onDragEnd: (widget: DesignWidget) => emit('drag-end', widget),
+          onResizeStart: (widget: DesignWidget) => emit('resize-start', widget),
+          onResizeing: (widget: DesignWidget) => emit('resizeing', widget),
+          onResizeEnd: (widget: DesignWidget) => emit('resize-end', widget)
         }
       )
     }

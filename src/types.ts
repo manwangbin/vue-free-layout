@@ -1,5 +1,3 @@
-import DesignService from './services/design.service'
-
 export interface Point {
   // 横坐标
   x: number;
@@ -31,18 +29,7 @@ export interface DesignWidget extends Widget{
   moveing: boolean;
 }
 
-export abstract class LayoutService {
-  designService?: DesignService;
-
-  setDesignService (designService: DesignService) {
-    this.designService = designService
-  }
-
-  abstract addNewWidget(widget: DesignWidget): void;
-
-  abstract dragBegin(widget: DesignWidget): void
-
-  abstract dragEnd(widget: DesignWidget, oldPosition: Point): void;
-
-  abstract resizedWidget(widget: DesignWidget, newSize: { x: number, y: number, width: number, height: number }): void;
+export interface DesignPanelRef {
+  createWidget(widget: Widget): void;
+  getPageWidgets(): Array<DesignWidget>;
 }

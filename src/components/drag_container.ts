@@ -23,6 +23,7 @@ export default defineComponent({
     }
   },
 
+  emits: ['drag-start', 'draging', 'drag-end', 'state-changed'],
   setup (props, { emit }) {
     const container: Ref<HTMLElement | undefined> = ref()
     onMounted(() => {
@@ -36,7 +37,7 @@ export default defineComponent({
     })
 
     const service = inject(DesignService.token) as DesignService
-    const draggingService = new DraggingService(service)
+    const draggingService = new DraggingService(service, emit)
 
     const containerClass = computed(() => {
       if (props.value.state === 1) {
@@ -60,7 +61,10 @@ export default defineComponent({
             style: {
               borderRadius: props.radius + 'px'
             },
-            onmousedown: (event: MouseEvent) => draggingService.mousedownHandler(event, props.value)
+            onmousedown: (event: MouseEvent) => {
+              draggingService.mousedownHandler(event, props.value)
+              emit('drag-start', props.value)
+            }
           }
         )
       }

@@ -11,7 +11,7 @@ export default class DraggingService {
   dragStartPosition: Point;
   orgPosition = new Map<string, Point>()
 
-  constructor (public service: DesignService) {
+  constructor (public service: DesignService, public emit: (event: 'drag-start' | 'draging' | 'drag-end', ...args: any[]) => void) {
     this.modal = reactive({
       beginDragging: false
     })
@@ -21,6 +21,9 @@ export default class DraggingService {
   mousedownHandler (event: MouseEvent, widget?: DesignWidget) {
     event.preventDefault()
     event.stopPropagation()
+
+    window.addEventListener('mousemove', this.dragHandler, true)
+    window.addEventListener('mouseup', this.dragEndHandler, true)
 
     this.dragStartPosition.x = event.clientX
     this.dragStartPosition.y = event.clientY
@@ -39,13 +42,7 @@ export default class DraggingService {
       const widget = this.service.modal.selecteds[i]
       widget.moveing = true
       this.orgPosition.set(widget.id, { x: widget.x, y: widget.y } as Point)
-      if (this.service.layoutService) {
-        this.service.layoutService.dragBegin(widget)
-      }
     }
-
-    window.addEventListener('mousemove', this.dragHandler, true)
-    window.addEventListener('mouseup', this.dragEndHandler, true)
   }
 
   dragHandler = (event: MouseEvent) => {
@@ -67,6 +64,7 @@ export default class DraggingService {
       if (orgPoint && widget) {
         widget.x = orgPoint.x + hspan
         widget.y = orgPoint.y + vspan
+        this.emit('draging', widget)
       }
     }
   }
@@ -82,9 +80,7 @@ export default class DraggingService {
       const widget = this.service.modal.selecteds[i]
       widget.moveing = false
       widget.state = 1
-      if (this.service.layoutService) {
-        this.service.layoutService.dragEnd(widget, this.orgPosition.get(widget.id)!)
-      }
+      this.emit('drag-end', widget)
     }
 
     this.orgPosition.clear()

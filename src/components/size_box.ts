@@ -4,12 +4,13 @@ import { computed, defineComponent, h, inject } from 'vue'
 const MIN_SPAN = 8
 
 export default defineComponent({
+  emits: ['drag-start', 'draging', 'drag-end', 'reszie-start', 'resize-end', 'resizeing'],
   setup (props, { emit }) {
     let orgMousePosition = { x: 0, y: 0 }
     let direct: Array<string> = []
 
     const designService = inject(DesignService.token) as DesignService
-    const service = new DraggingService(designService)
+    const service = new DraggingService(designService, emit)
 
     const position = computed(() => {
       const bxarray = designService.modal.selecteds.map(item => item.x)
@@ -80,6 +81,8 @@ export default defineComponent({
             widget.y = old.y + newposition.y
             widget.width = old.width + newposition.width
             widget.height = old.height + newposition.height
+
+            emit('resizeing', widget)
           }
         }
       }
@@ -89,6 +92,9 @@ export default defineComponent({
       event.preventDefault()
       event.stopPropagation()
 
+      window.addEventListener('mousemove', onMouseMoveHandler, true)
+      window.addEventListener('mouseup', onMouseUp, true)
+
       direct = directparam
       orgMousePosition = { x: event.clientX, y: event.clientY }
 
@@ -97,22 +103,17 @@ export default defineComponent({
       for (let i = 0; i < designService.modal.selecteds.length; i++) {
         const widget = designService.modal.selecteds[i]
         oldWidgetPosition.set(widget.id, { x: widget.x, y: widget.y, width: widget.width, height: widget.height })
+        emit('reszie-start', widget)
       }
-
-      window.addEventListener('mousemove', onMouseMoveHandler, true)
-      window.addEventListener('mouseup', onMouseUp, true)
     }
 
     const onMouseUp = (event: MouseEvent) => {
       window.removeEventListener('mousemove', onMouseMoveHandler, true)
       window.removeEventListener('mouseup', onMouseUp, true)
-      if (designService.layoutService) {
-        for (let i = 0; i < designService.modal.selecteds.length; i++) {
-          const widget = designService.modal.selecteds[i]
-          designService.layoutService.resizedWidget(widget, oldWidgetPosition.get(widget.id)!)
-        }
+      for (let i = 0; i < designService.modal.selecteds.length; i++) {
+        const widget = designService.modal.selecteds[i]
+        emit('reszie-start', widget)
       }
-
       oldWidgetPosition.clear()
     }
 

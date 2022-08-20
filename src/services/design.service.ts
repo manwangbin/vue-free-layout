@@ -1,6 +1,6 @@
-import { DesignWidget, Point, Widget, LayoutService } from '@/types'
+import { DesignWidget, Point, Widget } from '@/types'
 import { computed } from '@vue/reactivity'
-import { inject, InjectionKey, provide, reactive } from 'vue'
+import { InjectionKey, provide, reactive } from 'vue'
 
 interface Modal {
   newWidget?: DesignWidget;
@@ -22,8 +22,7 @@ interface Modal {
 }
 
 export default class DesignService {
-  // eslint-disable-next-line symbol-description
-  static token: InjectionKey<DesignService> = Symbol();
+  static token:InjectionKey<DesignService> = Symbol('DesignService');
 
   static SPAN = 40
 
@@ -33,9 +32,7 @@ export default class DesignService {
 
   selectedNewOrgState?: DesignWidget;
 
-  modal: Modal
-
-  layoutService?: LayoutService;
+  modal: Modal;
 
   pageP2CavnaseP = (point: Point) => {
     return {
@@ -51,7 +48,7 @@ export default class DesignService {
     }
   }
 
-  constructor (width: number, height: number, layout?:string) {
+  constructor (width: number, height: number, public emit: (event:'page-resized', ...args: any)=>void) {
     if (height === 0) {
       height = 500
     }
@@ -72,14 +69,6 @@ export default class DesignService {
     })
 
     this.modal.canvaseRect.height = height + DesignService.SPAN * 2 / this.modal.scale
-
-    if (layout) {
-      const layoutService = inject(layout) as LayoutService
-      if (layoutService) {
-        layoutService.setDesignService(this)
-        this.layoutService = layoutService
-      }
-    }
   }
 
   pxTorpx = computed(() => this.modal.pageRect.width / 750);
@@ -121,6 +110,8 @@ export default class DesignService {
 
     this.modal.pageRect.x = (this.modal.pageRect.cwidth - this.modal.pageRect.width) / 2
     this.modal.pageRect.y = DesignService.SPAN / this.modal.scale
+
+    this.emit('page-resized', this.modal.pageRect)
   }
 
   clearnSelected () {
@@ -170,7 +161,7 @@ export default class DesignService {
     }
   }
 
-  createWidgetHandler (widget: Widget, event: MouseEvent) {
+  createWidgetHandler (widget: Widget) {
     this.selectedNewWidget = widget
     window.addEventListener('mousemove', this.newWidgetDragingRegistHandler, true)
     window.addEventListener('mouseup', this.newWidgetDropRegistHandler, true)
@@ -218,9 +209,6 @@ export default class DesignService {
 
       this.modal.widgets.push(widget)
       this.setSelected([widget])
-      if (this.layoutService) {
-        this.layoutService.addNewWidget(widget)
-      }
     }
 
     this.modal.newWidget = undefined

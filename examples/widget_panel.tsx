@@ -1,18 +1,18 @@
-import DesignContainerService from '@/services/design.service'
-import { defineComponent, h, inject } from 'vue'
+import { defineComponent, h } from 'vue'
 import { nanoid } from 'nanoid'
+import { Widget } from '@/types'
 
 export default defineComponent({
   name: 'WidgetPanel',
 
-  setup () {
-    const containerService = inject(DesignContainerService.token) as DesignContainerService
+  emits: ['create-widget'],
+  setup (_, { emit }) {
     const renderWidgets = () => {
       return h(
         'div',
         {
           style: { lineHeight: '50px', textAlign: 'center' },
-          onmousedown: (event: MouseEvent) => containerService.createWidgetHandler({ id: nanoid(), tag: 'input', x: 0, y: 0, width: 120, height: 60, margin: [0] }, event)
+          onmousedown: () => emit('create-widget', { id: nanoid(), tag: 'input', x: 0, y: 0, width: 120, height: 60, margin: [0], enableResize: true } as Widget)
         },
         ['测试控件']
       )

@@ -1,9 +1,10 @@
 import DesignPanel from '@/components/design_panel'
-import { defineComponent, provide } from 'vue'
+import { defineComponent, Ref, ref } from 'vue'
 import Header from './header'
 import WidgetPanel from './widget_panel'
-import './style.less'
+import { DesignPanelRef, Widget } from '@/types'
 import LtLayoutService from './lt_layout.service'
+import './style.less'
 
 export default defineComponent({
   name: 'ExamplePanel',
@@ -14,20 +15,32 @@ export default defineComponent({
 
   setup () {
     const ltLayoutService = new LtLayoutService()
-    provide('ltlayout', ltLayoutService)
+    const designPanel:Ref<DesignPanelRef|null> = ref(null)
 
-    return () => (
+    const createWidgetHandler = (widget: Widget) => {
+      if (designPanel.value && designPanel.value) {
+        designPanel.value.createWidget(widget)
+        console.log("add new widget", widget);
+        console.log("get all widgets", designPanel.value.getPageWidgets());
+      }
+    }
+
+    return { designPanel, createWidgetHandler }
+  },
+
+  render () {
+    return (
       <DesignPanel
+        ref="designPanel"
         style="margin:10px 100px;height: 880px;"
         width={595}
         height={842}
         v-slots={{
           header: () => <Header />,
-          left: () => <WidgetPanel />,
+          left: () => <WidgetPanel onCreateWidget={(widget: Widget) => this.createWidgetHandler(widget)} />,
           right: () => <div style="width:200px; background: #ffffff"/>,
           item: (widget:any) => <input ></input>
         }}
-        layout="ltlayout"
         >
       </DesignPanel>
     )
