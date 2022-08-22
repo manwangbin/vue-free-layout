@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "outDir": "es",
+    "module": "esnext",
+    "target": "ES6"
+  },
+  "exclude": [
+    "examples"
+  ]
+}

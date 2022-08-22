@@ -1,6 +1,6 @@
-import DesignService from '@/services/design.service'
-import DraggingService from '@/services/dragging.service'
-import { DesignWidget } from '@/types'
+import DesignService from '../services/design.service'
+import DraggingService from '../services/dragging.service'
+import { DesignWidget } from '../types'
 import { computed, defineComponent, h, inject, onMounted, PropType, Ref, ref } from 'vue'
 
 export default defineComponent({

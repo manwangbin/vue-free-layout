@@ -1,4 +1,4 @@
-import { DesignWidget, Point } from '@/types'
+import { DesignWidget, Point } from '../types'
 import { reactive } from 'vue'
 import DesignService from './design.service'
 

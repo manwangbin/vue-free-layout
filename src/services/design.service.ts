@@ -1,4 +1,4 @@
-import { DesignWidget, Point, Widget } from '@/types'
+import { DesignWidget, Point, Widget } from '../types'
 import { computed } from '@vue/reactivity'
 import { InjectionKey, provide, reactive } from 'vue'
 

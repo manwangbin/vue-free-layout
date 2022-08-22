@@ -1,17 +1,18 @@
 {
   "name": "vue3-free-layout",
-  "version": "0.1.22",
+  "version": "0.1.32",
   "private": false,
   "description": "[vue3+ts]拖动布局，自由拖动，标尺，放大缩小，控件之间的标尺",
   "license": "MIT",
   "author": {
     "name": "王宾"
   },
-  "main": "./dist/vue3-free-layout.umd.js",
-  "module": "./dist/vue3-free-layout.esm.js",
-  "typings": "./dist/index.d.ts",
+  "main": "dist/vue3-free-layout.umd.js",
+  "module": "dist/vue3-free-layout.esm.js",
+  "types": "dist/index.d.ts",
+  "style": "dist/vue3-free-layout.esm.css",
   "files": [
-    "./dist/*"
+    "dist"
   ],
   "repository": {
     "type": "git",
@@ -32,15 +33,13 @@
   ],
   "scripts": {
     "dev": "vite -m development",
-    "build": "npm run clean && npm run build:esm && npm run build:umd",
-    "build:esm": "rollup  --config build/rollup.ems.config.ts",
-    "build:umd": "rollup --config build/rollup.umd.config.ts",
+    "build": "npm run clean && rollup -c build/rollup.esm.config.ts && rollup -c build/rollup.umd.config.ts",
     "preview": "vite preview",
-    "clean": "rimraf ./dist"
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "core-js": "^3.8.3",
-    "nanoid": "^3.3.1",
+    "nanoid": "^3.3.4",
     "postcss-import": "^14.1.0",
     "vue": "^3.2.13",
     "vue-inline-svg": "^3.1.0"
@@ -62,6 +61,7 @@
     "@vue/test-utils": "^2.0.2",
     "@vue/vue3-jest": "^28.0.1",
     "autoprefixer": "^10.4.7",
+    "babel-plugin-transform-class-properties": "^6.24.1",
     "cross-env": "^7.0.3",
     "del": "^6.1.1",
     "eslint": "^8.19.0",

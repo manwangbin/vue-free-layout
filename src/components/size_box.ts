@@ -1,5 +1,5 @@
-import DesignService from '@/services/design.service'
-import DraggingService from '@/services/dragging.service'
+import DesignService from '../services/design.service'
+import DraggingService from '../services/dragging.service'
 import { computed, defineComponent, h, inject } from 'vue'
 const MIN_SPAN = 8
 

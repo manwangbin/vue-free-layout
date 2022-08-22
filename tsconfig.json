@@ -1,20 +1,14 @@
 {
   "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
+    "target": "ES2015",
+    "module": "ES2015",
     "strict": true,
-    "jsx": "preserve",
     "moduleResolution": "node",
-    "experimentalDecorators": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
-    "useDefineForClassFields": true,
-    "sourceMap": true,
-    "baseUrl": "./",
-    "outDir": "./dist",
-    "types": ["vite/client", "node", "jest"],
+    "sourceMap": false,
+    "baseUrl": ".",
     "paths": {
       "@/*": [
         "src/*",
@@ -29,14 +23,9 @@
     ]
   },
   "include": [
-    "examples/*.ts",
-    "examples/*.tsx",
-    "src/*.ts",
-    "src/**/*.ts",
-    "typings/shims-vue.d.ts"
+    "src/**/*.ts"
   ],
   "exclude": [
     "node_modules"
   ]
-
 }

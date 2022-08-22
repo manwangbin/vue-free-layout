@@ -1,13 +1,14 @@
-// rollup.config.js
 import { name } from '../package.json'
 import typescript from 'rollup-plugin-typescript2'
 import vuePlugin from 'rollup-plugin-vue'
-// 如果依赖模块中存在 es 模块，需要使用 @rollup/plugin-node-resolve 插件进行转换
 import nodeResolve from '@rollup/plugin-node-resolve'
 import postcss from 'rollup-plugin-postcss'
 import postcssImport from 'postcss-import'
 import commonjs from '@rollup/plugin-commonjs'
-import { terser } from 'rollup-plugin-terser'
+import babel from '@rollup/plugin-babel'
+import esbuild from 'rollup-plugin-esbuild'
+import json from '@rollup/plugin-json'
+import alias from '@rollup/plugin-alias'
 
 const file = (type) => `dist/${name}.${type}.js`
 
@@ -32,8 +33,19 @@ export default {
     format: 'es' // 编译模式
   },
   plugins: [
-    nodeResolve(),
-    typescript({ tsconfigOverride: overrides }),
+    babel({
+      exclude: "node_modules/**"
+    }),
+    nodeResolve({
+      jsnext: true,
+      main: true,
+      extensions: ['.ts', '.tsx', '.js', '.jsx', '.json', '.vue']
+    }),
+    alias(),
+    json(),
+    typescript({
+      tsconfigOverride:overrides
+    }),
     vuePlugin(),
     postcss({
       extensions: ['.pcss', '.less', '.css'],
@@ -45,7 +57,8 @@ export default {
           "node_modules/**",
           "node_modules/**/*"
       ]
-    })
+    }),
+    esbuild()
   ],
   external: ['vue'] // 依赖模块
 }

@@ -1,10 +1,7 @@
-import DesignPanel from './components'
-import { Point, Widget, DesignWidget, DesignPanelRef } from './types'
-
-export {
-  DesignPanel,
+export { default as DesignPanel } from './components'
+export type {
   Point,
   Widget,
   DesignWidget,
   DesignPanelRef
-}
+} from './types'
