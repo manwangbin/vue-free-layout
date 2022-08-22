@@ -53,7 +53,7 @@ export default defineComponent({
     }
   },
 
-  emits: ['page-resized', 'added', 'deleted', 'drag-start', 'draging', 'drag-end', 'resize-start', 'resizeing', 'resize-end'],
+  emits: ['page-resized', 'added', 'deleted', 'drag-start', 'drag-moving', 'drag-end', 'resize-start', 'resizeing', 'resize-end'],
   setup (props, { emit, slots }) {
     const designContainer: Ref<HTMLElement | undefined> = ref()
     const designBody: Ref<HTMLElement | undefined> = ref()
@@ -167,7 +167,7 @@ export default defineComponent({
           class: 'canvase',
           scale: service.modal.scale,
           ...props,
-          onDraging: (widget: DesignWidget) => emit('draging', widget),
+          onDraging: (widget: DesignWidget) => emit('drag-moving', widget),
           onDragStart: (widget: DesignWidget) => emit('drag-start', widget),
           onDragEnd: (widget: DesignWidget) => emit('drag-end', widget),
           onResizeStart: (widget: DesignWidget) => emit('resize-start', widget),
