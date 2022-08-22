@@ -23,7 +23,7 @@ export default defineComponent({
     }
   },
 
-  emits: ['drag-start', 'draging', 'drag-end', 'state-changed'],
+  emits: ['drag-start', 'drag-moving', 'drag-end', 'state-changed'],
   setup (props, { emit }) {
     const container: Ref<HTMLElement | undefined> = ref()
     onMounted(() => {

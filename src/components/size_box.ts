@@ -4,7 +4,7 @@ import { computed, defineComponent, h, inject } from 'vue'
 const MIN_SPAN = 8
 
 export default defineComponent({
-  emits: ['drag-start', 'draging', 'drag-end', 'reszie-start', 'resize-end', 'resizeing'],
+  emits: ['drag-start', 'drag-moving', 'drag-end', 'reszie-start', 'resize-end', 'resizeing'],
   setup (props, { emit }) {
     let orgMousePosition = { x: 0, y: 0 }
     let direct: Array<string> = []

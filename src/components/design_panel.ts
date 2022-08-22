@@ -167,7 +167,7 @@ export default defineComponent({
           class: 'canvase',
           scale: service.modal.scale,
           ...props,
-          onDraging: (widget: DesignWidget) => emit('drag-moving', widget),
+          onDragMoving: (widget: DesignWidget) => emit('drag-moving', widget),
           onDragStart: (widget: DesignWidget) => emit('drag-start', widget),
           onDragEnd: (widget: DesignWidget) => emit('drag-end', widget),
           onResizeStart: (widget: DesignWidget) => emit('resize-start', widget),

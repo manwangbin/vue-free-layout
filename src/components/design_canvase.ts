@@ -51,7 +51,7 @@ export default defineComponent({
     }
   },
 
-  emits: ['drag-start', 'draging', 'drag-end', 'resize-start', 'resizeing', 'resize-end'],
+  emits: ['drag-start', 'drag-moving', 'drag-end', 'resize-start', 'resizeing', 'resize-end'],
   setup (props, { emit, slots }) {
     const drawer: Ref<HTMLElement | null> = ref(null)
 
@@ -172,7 +172,7 @@ export default defineComponent({
           DragContainer,
           {
             value: widget,
-            onDraging: (widget: DesignWidget) => emit('draging', widget),
+            onDragMoving: (widget: DesignWidget) => emit('drag-moving', widget),
             onDragStart: (widget: DesignWidget) => emit('drag-start', widget),
             onDragEnd: (widget: DesignWidget) => emit('drag-end', widget)
           },
@@ -197,7 +197,7 @@ export default defineComponent({
         SizeBox,
         {
           onSizeChanged: (event: any) => selectedWidgetSizeChanageHandler(event),
-          onDraging: (widget: DesignWidget) => emit('draging', widget),
+          onDragMoving: (widget: DesignWidget) => emit('drag-moving', widget),
           onDragStart: (widget: DesignWidget) => emit('drag-start', widget),
           onDragEnd: (widget: DesignWidget) => emit('drag-end', widget),
           onResizeStart: (widget: DesignWidget) => emit('resize-start', widget),

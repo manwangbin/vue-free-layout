@@ -11,7 +11,7 @@ export default class DraggingService {
   dragStartPosition: Point;
   orgPosition = new Map<string, Point>()
 
-  constructor (public service: DesignService, public emit: (event: 'drag-start' | 'draging' | 'drag-end', ...args: any[]) => void) {
+  constructor (public service: DesignService, public emit: (event: 'drag-start' | 'drag-moving' | 'drag-end', ...args: any[]) => void) {
     this.modal = reactive({
       beginDragging: false
     })
@@ -64,7 +64,7 @@ export default class DraggingService {
       if (orgPoint && widget) {
         widget.x = orgPoint.x + hspan
         widget.y = orgPoint.y + vspan
-        this.emit('draging', widget)
+        this.emit('drag-moving', widget)
       }
     }
   }
