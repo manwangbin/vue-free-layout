@@ -12,6 +12,11 @@ export default defineComponent({
   name: 'DesignPanel',
 
   props: {
+    value: {
+      type: Array as PropType<Array<Widget>>,
+      default: () => new Array()
+    },
+
     width: {
       type: Number,
       required: true
@@ -53,11 +58,11 @@ export default defineComponent({
     }
   },
 
-  emits: ['page-resized', 'added', 'deleted', 'drag-start', 'drag-moving', 'drag-end', 'resize-start', 'resizeing', 'resize-end'],
+  emits: ['update:value', 'page-resized', 'added', 'deleted', 'drag-start', 'drag-moving', 'drag-end', 'resize-start', 'resizeing', 'resize-end'],
   setup (props, { emit, slots }) {
     const designContainer: Ref<HTMLElement | undefined> = ref()
     const designBody: Ref<HTMLElement | undefined> = ref()
-    const service = new DesignService(props.width, props.height, emit)
+    const service = new DesignService(props.value, props.width, props.height, emit)
 
     /**
      * 添加新的控件
@@ -67,6 +72,7 @@ export default defineComponent({
     const createWidget = (widget: Widget) => {
       service.createWidgetHandler(widget)
       emit('added', widget)
+      emit('update:value', service.modal.widgets)
     }
 
     /**
@@ -167,12 +173,12 @@ export default defineComponent({
           class: 'canvase',
           scale: service.modal.scale,
           ...props,
-          onDragMoving: (widget: DesignWidget) => emit('drag-moving', widget),
-          onDragStart: (widget: DesignWidget) => emit('drag-start', widget),
-          onDragEnd: (widget: DesignWidget) => emit('drag-end', widget),
-          onResizeStart: (widget: DesignWidget) => emit('resize-start', widget),
-          onResizeing: (widget: DesignWidget) => emit('resizeing', widget),
-          onResizeEnd: (widget: DesignWidget) => emit('resize-end', widget)
+          onDragMoving: (widget: DesignWidget) => { emit('drag-moving', widget); emit('update:value', service.modal.widgets); },
+          onDragStart: (widget: DesignWidget) => { emit('drag-start', widget); emit('update:value', service.modal.widgets); },
+          onDragEnd: (widget: DesignWidget) => { emit('drag-end', widget); emit('update:value', service.modal.widgets); },
+          onResizeStart: (widget: DesignWidget) => { emit('resize-start', widget); emit('update:value', service.modal.widgets); },
+          onResizeing: (widget: DesignWidget) => { emit('resizeing', widget); emit('update:value', service.modal.widgets);},
+          onResizeEnd: (widget: DesignWidget) => { emit('resize-end', widget); emit('update:value', service.modal.widgets);}
         },
         {
           item: slots.item

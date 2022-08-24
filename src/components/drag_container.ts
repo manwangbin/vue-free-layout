@@ -62,8 +62,10 @@ export default defineComponent({
               borderRadius: props.radius + 'px'
             },
             onmousedown: (event: MouseEvent) => {
-              draggingService.mousedownHandler(event, props.value)
-              emit('drag-start', props.value)
+              if (props.value.enableDragable) {
+                draggingService.mousedownHandler(event, props.value)
+                emit('drag-start', props.value)
+              }
             }
           }
         )

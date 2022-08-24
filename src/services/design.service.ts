@@ -48,7 +48,7 @@ export default class DesignService {
     }
   }
 
-  constructor (width: number, height: number, public emit: (event:'page-resized', ...args: any)=>void) {
+  constructor (widgets: Array<Widget>, width: number, height: number, public emit: (event:'page-resized' | 'drag-moving' | 'drag-end', ...args: any)=>void) {
     if (height === 0) {
       height = 500
     }
@@ -67,6 +67,9 @@ export default class DesignService {
       selecteds: [],
       widgets: []
     })
+    if (widgets) {
+      this.modal.widgets.push(...widgets.map(item => ({...item, state: 0, moveing: false})))
+    }
 
     this.modal.canvaseRect.height = height + DesignService.SPAN * 2 / this.modal.scale
   }
@@ -190,6 +193,7 @@ export default class DesignService {
 
       this.modal.newWidget.x = this.selectedNewOrgState.x + hspan
       this.modal.newWidget.y = this.selectedNewOrgState.y + vspan
+      this.emit("drag-moving", this.modal.newWidget)
     }
   }
 
@@ -209,6 +213,7 @@ export default class DesignService {
 
       this.modal.widgets.push(widget)
       this.setSelected([widget])
+      this.emit('drag-end', widget)
     }
 
     this.modal.newWidget = undefined

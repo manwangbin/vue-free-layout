@@ -20,6 +20,8 @@ export interface Widget extends Point {
   padding: Array<number>;
   // 是否可以改变大小
   enableResize: boolean;
+  // 是否运行拖动
+  enableDragable: boolean;
 }
 
 export interface DesignWidget extends Widget{
