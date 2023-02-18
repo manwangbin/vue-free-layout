@@ -12,7 +12,7 @@ export default defineComponent({
         'div',
         {
           style: { lineHeight: '50px', textAlign: 'center' },
-          onmousedown: () => emit('create-widget', { id: nanoid(), tag: 'input', x: 0, y: 0, width: 120, height: 60, margin: [0], enableResize: true } as Widget)
+          onmousedown: () => emit('create-widget', { id: nanoid(), tag: 'input', x: 0, y: 0, width: 120, height: 60, margin: [0], enableResize: true, enableDragable: true } as Widget)
         },
         ['测试控件']
       )

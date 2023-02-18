@@ -331,7 +331,8 @@ export default defineComponent({
     return { renderBorders, drawConerBox, renderCover }
   },
 
-  render () {
+  render() {
+    console.log("render szie box ");
     return h(
       'div',
       {},

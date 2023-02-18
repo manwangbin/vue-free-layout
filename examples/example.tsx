@@ -20,8 +20,6 @@ export default defineComponent({
     const createWidgetHandler = (widget: Widget) => {
       if (designPanel.value && designPanel.value) {
         designPanel.value.createWidget(widget)
-        console.log("add new widget", widget);
-        console.log("get all widgets", designPanel.value.getPageWidgets());
       }
     }
 
@@ -39,7 +37,7 @@ export default defineComponent({
           header: () => <Header />,
           left: () => <WidgetPanel onCreateWidget={(widget: Widget) => this.createWidgetHandler(widget)} />,
           right: () => <div style="width:200px; background: #ffffff"/>,
-          item: (widget:any) => <input ></input>
+          item: (widget:any) => <input></input>
         }}
         >
       </DesignPanel>

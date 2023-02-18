@@ -91,7 +91,8 @@ export default defineComponent({
     return { container, containerClass, renderCover, cssTransform }
   },
 
-  render () {
+  render() {
+    console.log("render drag container ", this.$props.value.id);
     return h(
       'div',
       {
