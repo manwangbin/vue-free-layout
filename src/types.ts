@@ -1,5 +1,5 @@
 export interface Point {
-  // 横坐标
+  // 横坐标（组件渲染时的坐标）
   x: number;
   // 纵坐标
   y: number;
@@ -29,9 +29,17 @@ export interface DesignWidget extends Widget{
   state: number;
   // 是否正在被拖动
   moveing: boolean;
+  // 基础横坐标（鼠标在画布上的坐标）
+  baseX: number;
+  // 基础纵坐标
+  baseY: number;
 }
 
 export interface DesignPanelRef {
   createWidget(widget: Widget): void;
   getPageWidgets(): Array<DesignWidget>;
 }
+
+export type Mixin<T, K> = {
+  [P in keyof (T & K)]: (T & K)[P]
+};

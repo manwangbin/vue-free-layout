@@ -1,10 +1,10 @@
-import { DesignWidget, Point, Widget } from '../types'
-import { defineComponent, h, inject, onMounted, PropType, ref, Ref } from 'vue'
+import { DesignWidget, Point, Widget } from "@/types"
+import { defineComponent, h, inject, onMounted, PropType, ref, Ref, watch } from "vue";
 import SizeBox from './size_box'
-
 import DesignService from '@/services/design.service'
 import DragContainer from './drag_container'
 import { computed } from '@vue/reactivity'
+import { LineDirection } from "@/services/alignmentLine.service";
 
 export default defineComponent({
   name: 'DesignCanvase',
@@ -56,6 +56,7 @@ export default defineComponent({
     const drawer: Ref<HTMLElement | null> = ref(null)
 
     const designService = inject(DesignService.token) as DesignService
+
     const containerWidth = computed(() => designService.modal.pageRect.cwidth * designService.modal.scale)
     const containerHeight = computed(() => designService.modal.pageRect.cheight * designService.modal.scale)
 
@@ -71,10 +72,10 @@ export default defineComponent({
     const selectedWidgetSizeChanageHandler = (size: any) => {
       if (designService.modal.selecteds && designService.modal.selecteds.length > 0) {
         if (designService.modal.selecteds.length === 1) {
-          designService.modal.selecteds[0].x = size.x
-          designService.modal.selecteds[0].y = size.y
-          designService.modal.selecteds[0].width = size.width
-          designService.modal.selecteds[0].height = size.height
+          designService.modal.selecteds[0].set('x', size.x)
+          designService.modal.selecteds[0].set('y', size.y)
+          designService.modal.selecteds[0].set('width', size.width)
+          designService.modal.selecteds[0].set('height', size.height)
         } else {
           // TODO
         }
@@ -168,10 +169,11 @@ export default defineComponent({
 
     const renderWidgets = () => {
       if (designService.modal.widgets) {
-        return designService.modal.widgets.map(widget => h(
+        return designService.modal.widgets.map((widget, idx) => h(
           DragContainer,
           {
             value: widget,
+            widgetIdx: idx,
             onDragMoving: (widget: DesignWidget) => emit('drag-moving', widget),
             onDragStart: (widget: DesignWidget) => emit('drag-start', widget),
             onDragEnd: (widget: DesignWidget) => emit('drag-end', widget)
@@ -189,7 +191,7 @@ export default defineComponent({
         return
       }
 
-      if (designService.modal.selecteds.find(widget => (!widget.enableResize || widget.moveing))) {
+      if (designService.modal.selecteds.find(widget => (!widget.get('enableResize') || widget.get('moveing')))) {
         return
       }
 
@@ -207,12 +209,44 @@ export default defineComponent({
       )
     }
 
+    const renderAlignmentLine = () => {
+      if(designService.boundaryLine.value){
+        return designService.boundaryLine.value.map(line=>{
+          const {x, y} = designService.pageP2CavnaseP({ x: line.x, y: line.y })
+          const option = designService.alignmentLine?.option
+          const border = `${option?.alignWeight}px ${option?.alignColor} dashed`
+          return  h(
+            'div',
+            {
+              class: 'alignment-line',
+              style: {
+                display: line.show && option?.showAlign?'':'none',
+                transform: `translate(${x}px, ${y}px)`,
+                borderLeft: line.direction===LineDirection.COLUMN?border:'',
+                borderTop: line.direction===LineDirection.ROW?border:'',
+                width: line.width,
+                height: line.height
+              }
+            },
+            [
+              // line.x, '-', line.y, '-', line.show
+            ]
+          )
+        })
+      }
+
+      return h(
+        'div',
+      )
+    }
+
     const renderChildren = () => {
       return [
         renderDrawer(),
         renderWidgets(),
         renderSizeBorders(),
-        renderSelectedArea()
+        renderSelectedArea(),
+        renderAlignmentLine()
       ]
     }
 
@@ -231,7 +265,7 @@ export default defineComponent({
         onmousedown: (event: MouseEvent) => this.bgmousedownHandler(event)
       },
       [
-        ...this.renderChildren()
+        ...this.renderChildren(),
       ]
     )
   }

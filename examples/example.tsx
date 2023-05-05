@@ -33,11 +33,17 @@ export default defineComponent({
         style="margin:10px 100px;height: 880px;"
         width={595}
         height={842}
+        showAlign={true}
+        enableAdsorb={true}
+        alignWeight={2}
+        alignColor="#22c6b0"
+        showAlignSpan={30}
+        adsorbSpan={10}
         v-slots={{
           header: () => <Header />,
           left: () => <WidgetPanel onCreateWidget={(widget: Widget) => this.createWidgetHandler(widget)} />,
           right: () => <div style="width:200px; background: #ffffff"/>,
-          item: (widget:any) => <input></input>
+          item: (widget:any) => <input style="width: 100%;box-sizing: border-box;"></input>
         }}
         >
       </DesignPanel>

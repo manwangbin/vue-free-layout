@@ -1,11 +1,12 @@
 import { DesignWidget, Widget } from './../types'
-import { defineComponent, h, onMounted, ref, Ref, PropType } from 'vue'
+import { defineComponent, h, onMounted, ref, Ref, PropType, onBeforeUnmount, watch } from "vue";
 import DesignService from '../services/design.service'
 import DesignCanvase from './design_canvase'
 import { getClientRect } from '../util/size.util'
 import DragContainer from './drag_container'
 import CRuler from './c_ruler'
 import '../style.less'
+import AlignmentLine from "@/services/alignmentLine.service";
 
 const RULER_WIDTH = 24
 export default defineComponent({
@@ -55,6 +56,42 @@ export default defineComponent({
     rulerColorDark: {
       type: String,
       default: '#646464 '
+    },
+
+    // 是否显示对齐线
+    showAlign: {
+      type: Boolean,
+      default: true
+    },
+
+    // 是否吸附
+    enableAdsorb: {
+      type: Boolean,
+      default: true
+    },
+
+    // 对齐线宽度
+    alignWeight: {
+      type: Number,
+      default: 1
+    },
+
+    // 对齐线颜色
+    alignColor: {
+      type: String,
+      default: '#3ca4fc'
+    },
+
+    // 显示对齐线的距离
+    showAlignSpan: {
+      type: Number,
+      default: 20
+    },
+
+    // 吸附距离
+    adsorbSpan: {
+      type: Number,
+      default: 10
     }
   },
 
@@ -62,12 +99,15 @@ export default defineComponent({
   setup (props, { emit, slots }) {
     const designContainer: Ref<HTMLElement | undefined> = ref()
     const designBody: Ref<HTMLElement | undefined> = ref()
-    const service = new DesignService(props.value, props.width, props.height, emit)
+
+    const alignmentLine = !props.showAlign&&!props.enableAdsorb?
+      null:new AlignmentLine(props)
+    const service = new DesignService(props.value, props.width, props.height, emit, alignmentLine)
 
     /**
      * 添加新的控件
-     * 
-     * @param widget 
+     *
+     * @param widget
      */
     const createWidget = (widget: Widget) => {
       service.createWidgetHandler(widget)
@@ -77,8 +117,8 @@ export default defineComponent({
 
     /**
      * 获取当前页面的weidgets
-     * 
-     * @returns 
+     *
+     * @returns
      */
     const getPageWidgets = (): Array<DesignWidget> => {
       return service.modal.widgets;
@@ -104,12 +144,13 @@ export default defineComponent({
       }
     }
 
+    // 渲染从左侧开始拖动的组件
     const renderAddWdiget = () => {
       if (service.modal.newWidget) {
         return h(
           DragContainer,
           {
-            value: service.modal.newWidget
+            value: service.modal.newWidget,
           },
           {
             default: () => [slots.item && slots.item(service.modal.newWidget)]
