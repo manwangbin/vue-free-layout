@@ -117,6 +117,9 @@ export default defineComponent({
         this.$slots.default && this.$slots.default(),
         this.renderCover(),
         // this.$props.value.x, '-', this.$props.value.y, h('div'),
+        // this.$props.value.state, h('div'),
+        // this.$props.value.moveing+'', h('div'),
+        // this.$props.value.resizing+'', h('div'),
         // this.$props.value.baseX, '-', this.$props.value.baseY, h('div'),
         // this.$props.value.width, '-', this.$props.value.height
       ]

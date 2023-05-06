@@ -52,7 +52,7 @@ export default defineComponent({
           { x: <number>widget.get('x'), y: <number>widget.get('y'),
             width: <number>widget.get('width'), height: <number>widget.get('height') })
         // 移除被选中widget的边界线
-        designService.alignmentLine?.delBoundaryLine(<string>widget.get('id'))
+        // designService.alignmentLine?.delBoundaryLine(<string>widget.get('id'))
         emit('reszie-start', widget.toJSON())
       }
     }
@@ -112,6 +112,7 @@ export default defineComponent({
             widget.set('height', old.height + newposition.height)
             widget.set('baseX', old.x + newposition.x)
             widget.set('baseY', old.y + newposition.y)
+            widget.set('resizing', true)
 
             emit('resizeing', widget.toJSON())
           }
@@ -126,8 +127,9 @@ export default defineComponent({
       window.removeEventListener('mouseup', onMouseUp, true)
       for (let i = 0; i < designService.modal.selecteds.length; i++) {
         const widget = designService.modal.selecteds[i]
+        widget.set('resizing', false)
         // 添加选中widget的边界线
-        designService.alignmentLine?.addBoundaryLine(<DesignWidget>widget.toJSON())
+        // designService.alignmentLine?.addBoundaryLine(<DesignWidget>widget.toJSON())
         emit('reszie-start', widget.toJSON())
       }
       oldWidgetPosition.clear()

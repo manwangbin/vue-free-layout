@@ -2,7 +2,7 @@ import { DesignWidget, Point, Widget } from '../types'
 import { computed } from '@vue/reactivity'
 import { ComputedRef, InjectionKey, provide, reactive } from "vue";
 import AlignmentLine, { BoundaryLine } from "@/services/alignmentLine.service";
-import SynchronizeService, { YWidget } from "@/services/synchronize.service";
+import SynchronizeService, { UpdateData, YWidget } from "@/services/synchronize.service";
 import * as Y from "yjs";
 import { CheckType } from "@/util/checkType";
 
@@ -74,6 +74,7 @@ export default class DesignService {
           ...item,
           state: 0,
           moveing: false,
+          resizing: false,
           baseX: item.x,
           baseY: item.y
         }
@@ -81,14 +82,14 @@ export default class DesignService {
       this.syncService.yWidget.push(w)
     }
 
-    this.syncService.onDataUpdate = (data, updateHandlers)=>{
-      // this.modal.widgets = data
-      updateHandlers.forEach(updateHandler=>{
-        updateHandler(this.modal.widgets)
+    // 监听yjs数据更新
+    this.syncService.onDataUpdate = (data, updateData)=>{
+      updateData.forEach(update=>{
+        update.handler(this.modal.widgets)
+        this.alignmentLine?.handlerAlignmentLine(update)
       })
     }
     this.modal.canvaseRect.height = height + DesignService.SPAN * 2 / this.modal.scale
-
   }
 
   pageP2CavnaseP = (point: Point) => {
@@ -232,7 +233,10 @@ export default class DesignService {
           y = 0
         }
 
-        this.modal.newWidget = { ...this.selectedNewWidget, x: x, y: y, state: -1, moveing: false, baseX: x, baseY: y }
+        this.modal.newWidget = {
+          ...this.selectedNewWidget, x: x, y: y, state: -1,
+          moveing: false, resizing: false, baseX: x, baseY: y
+        }
         this.selectedNewOrgState = { ...this.modal.newWidget }
       }
     } else if (this.selectedMousePoint && this.selectedNewOrgState) {
@@ -276,9 +280,9 @@ export default class DesignService {
       const yWidget = this.syncService.createWidget(widget)
       this.syncService.yWidget.push([yWidget])
       this.setSelected([yWidget])
-      this.alignmentLine?.addBoundaryLine(widget)
+      // this.alignmentLine?.addBoundaryLine(widget)
       // 停止移动后隐藏所有边界线
-      this.alignmentLine?.hideAllLine()
+      // this.alignmentLine?.hideAllLine()
       this.emit('drag-end', widget)
     }
 

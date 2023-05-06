@@ -4,6 +4,7 @@ import { nanoid } from "nanoid";
 import { InjectionKey, onBeforeUnmount, provide } from "vue";
 import { DesignWidget, Mixin } from "@/types";
 import { CheckType } from "@/util/checkType";
+import AlignmentLine from "@/services/alignmentLine.service";
 
 export type MapVal = string|number|boolean|Array<number>
 
@@ -21,17 +22,24 @@ interface KeysData {
   value: MapVal
 }
 
+export interface UpdateData {
+  type: 'array'|'map',
+  path: Array<number|string>,
+  target: any,
+  deltaData?: Delta,
+  keysData?: KeysData,
+  handler: Function
+}
+
 export default class SynchronizeService<T>{
 
-  static token: InjectionKey<SynchronizeService<any>> = Symbol('SynchronizeService');
   ydoc;
   wsProvider;
   clientId = nanoid();
   yWidget;
 
-  constructor(serverUrl: string=`ws://172.16.14.206:1234`,
-              roomName: string='root') {
-    provide(SynchronizeService.token, this)
+  constructor(serverUrl: string=`ws://localhost:1234`,
+              roomName: string='root2') {
     this.ydoc = new Y.Doc()
     this.wsProvider = new WebsocketProvider(
       serverUrl, roomName, this.ydoc,
@@ -57,7 +65,7 @@ export default class SynchronizeService<T>{
   _onDataUpdate(YArrayEvent: Array<any>, Transaction: any){
     const data = this.yWidget.toJSON() as T[]
 
-    let updateHandlers: Function[] = []
+    let updateData: UpdateData[] = []
 
     YArrayEvent.forEach(event=>{
       const eventData = {
@@ -81,27 +89,41 @@ export default class SynchronizeService<T>{
           item.insert && (deltaData.insert = item.insert)
           item.delete && (deltaData.delete = item.delete)
         })
-        updateHandlers.push(this.handlerArray.bind(this, eventData.path, deltaData))
+        updateData.push({
+          type: 'array',
+          path: eventData.path,
+          target: event.target,
+          deltaData: deltaData,
+          keysData: undefined,
+          handler: this.handlerArray.bind(this, eventData.path, deltaData)
+        })
       }
 
       // 向map中添加、修改、删除
       if(eventData.keys.size !== 0){
         eventData.keys.forEach((value, key)=>{
-
           const keysData: KeysData = {
             key: key,
             action: value.action,
-            value: YArrayEvent[0].target.get(key)
+            value: event.target.get(key)
           }
-          updateHandlers.push(this.handlerMap.bind(this, eventData.path, keysData))
+          updateData.push(
+            {
+              type: 'map',
+              path: eventData.path,
+              target: event.target,
+              deltaData: undefined,
+              keysData: keysData,
+              handler: this.handlerMap.bind(this, eventData.path, keysData)
+            })
         })
       }
     })
 
-    this.onDataUpdate(data, updateHandlers)
+    this.onDataUpdate(data, updateData)
   }
 
-  onDataUpdate: (data: T[], updateHandlers: Function[])=>void = ()=>{}
+  onDataUpdate: (data: T[], updateData: UpdateData[])=>void = ()=>{}
 
   // 根据path获取当前被修改的对象
   getCurrentByPath(data: any, path: Array<string|number>){
@@ -148,4 +170,5 @@ export default class SynchronizeService<T>{
     this.yWidget.unobserveDeep(this._onDataUpdate)
     this.wsProvider.destroy()
   }
+
 }

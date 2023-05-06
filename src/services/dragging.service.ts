@@ -43,7 +43,7 @@ export default class DraggingService {
       yWidget.set('moveing', true)
       this.orgPosition.set(yWidget.get('id') as string, { x: yWidget.get('x'), y: yWidget.get('y') } as Point)
       // 开始移动的组件删除他们的边界线
-      this.service.alignmentLine?.delBoundaryLine(yWidget.get('id') as string)
+      // this.service.alignmentLine?.delBoundaryLine(yWidget.get('id') as string)
     }
   }
 
@@ -86,9 +86,9 @@ export default class DraggingService {
       yWidget.set('moveing', false)
       yWidget.set('state', 1)
       // 停止移动的组件添加他们的边界线
-      this.service.alignmentLine?.addBoundaryLine(<DesignWidget>yWidget.toJSON())
+      // this.service.alignmentLine?.addBoundaryLine(<DesignWidget>yWidget.toJSON())
       // 停止移动后隐藏所有边界线
-      this.service.alignmentLine?.hideAllLine()
+      // this.service.alignmentLine?.hideAllLine()
       this.emit('drag-end', yWidget.toJSON())
     }
 

@@ -29,6 +29,8 @@ export interface DesignWidget extends Widget{
   state: number;
   // 是否正在被拖动
   moveing: boolean;
+  // 是否正在改变大小
+  resizing: boolean;
   // 基础横坐标（鼠标在画布上的坐标）
   baseX: number;
   // 基础纵坐标
