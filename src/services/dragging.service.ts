@@ -1,6 +1,7 @@
 import { DesignWidget, Point } from '../types'
 import { reactive } from 'vue'
 import DesignService from './design.service'
+import { YWidget } from "@/services/synchronize.service";
 
 interface Modal {
   beginDragging: boolean;
@@ -18,7 +19,7 @@ export default class DraggingService {
     this.dragStartPosition = { x: -1, y: -1 }
   }
 
-  mousedownHandler (event: MouseEvent, widget?: DesignWidget) {
+  mousedownHandler (event: MouseEvent, yWidget?: YWidget) {
     event.preventDefault()
     event.stopPropagation()
 
@@ -27,21 +28,22 @@ export default class DraggingService {
 
     this.dragStartPosition.x = event.clientX
     this.dragStartPosition.y = event.clientY
-
-    if (widget) {
+    if (yWidget) {
       if (event.altKey || event.metaKey) {
-        this.service.addSelected(widget)
+        this.service.addSelected(yWidget)
       } else {
-        this.service.setSelected([widget])
+        this.service.setSelected([yWidget])
       }
     }
 
     this.modal.beginDragging = false
     this.orgPosition.clear()
     for (let i = 0; i < this.service.modal.selecteds.length; i++) {
-      const widget = this.service.modal.selecteds[i]
-      widget.moveing = true
-      this.orgPosition.set(widget.id, { x: widget.x, y: widget.y } as Point)
+      const yWidget = this.service.modal.selecteds[i]
+      yWidget.set('moveing', true)
+      this.orgPosition.set(yWidget.get('id') as string, { x: yWidget.get('x'), y: yWidget.get('y') } as Point)
+      // 开始移动的组件删除他们的边界线
+      // this.service.alignmentLine?.delBoundaryLine(yWidget.get('id') as string)
     }
   }
 
@@ -51,7 +53,7 @@ export default class DraggingService {
     if (!this.modal.beginDragging) {
       this.modal.beginDragging = true
       for (let i = 0; i < this.service.modal.selecteds.length; i++) {
-        this.service.modal.selecteds[i].state = 3
+        this.service.modal.selecteds[i].set('state', 3)
       }
     }
 
@@ -59,14 +61,17 @@ export default class DraggingService {
     const vspan = (event.clientY - this.dragStartPosition.y) / this.service.modal.scale
 
     for (let i = 0; i < this.service.modal.selecteds.length; i++) {
-      const widget = this.service.modal.selecteds[i]
-      const orgPoint = this.orgPosition.get(widget.id)
-      if (orgPoint && widget) {
-        widget.x = orgPoint.x + hspan
-        widget.y = orgPoint.y + vspan
-        this.emit('drag-moving', widget)
+      const yWidget = this.service.modal.selecteds[i]
+      const orgPoint = this.orgPosition.get(yWidget.get('id') as string)
+      if (orgPoint && yWidget) {
+        yWidget.set('x', orgPoint.x + hspan)
+        yWidget.set('y', orgPoint.y + vspan)
+        yWidget.set('baseX', orgPoint.x + hspan)
+        yWidget.set('baseY', orgPoint.y + vspan)
+        this.emit('drag-moving', yWidget.toJSON())
       }
     }
+    this.service.alignmentLine?.onWidgetGroupMove(this.service.modal.selecteds)
   }
 
   dragEndHandler = (event: MouseEvent) => {
@@ -77,10 +82,14 @@ export default class DraggingService {
 
     this.modal.beginDragging = false
     for (let i = 0; i < this.service.modal.selecteds.length; i++) {
-      const widget = this.service.modal.selecteds[i]
-      widget.moveing = false
-      widget.state = 1
-      this.emit('drag-end', widget)
+      const yWidget = this.service.modal.selecteds[i]
+      yWidget.set('moveing', false)
+      yWidget.set('state', 1)
+      // 停止移动的组件添加他们的边界线
+      // this.service.alignmentLine?.addBoundaryLine(<DesignWidget>yWidget.toJSON())
+      // 停止移动后隐藏所有边界线
+      // this.service.alignmentLine?.hideAllLine()
+      this.emit('drag-end', yWidget.toJSON())
     }
 
     this.orgPosition.clear()

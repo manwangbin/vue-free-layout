@@ -1,6 +1,7 @@
 import DesignService from '../services/design.service'
 import DraggingService from '../services/dragging.service'
 import { computed, defineComponent, h, inject } from 'vue'
+import { DesignWidget } from "@/types";
 const MIN_SPAN = 8
 
 export default defineComponent({
@@ -13,15 +14,15 @@ export default defineComponent({
     const service = new DraggingService(designService, emit)
 
     const position = computed(() => {
-      const bxarray = designService.modal.selecteds.map(item => item.x)
-      const byarray = designService.modal.selecteds.map(item => item.y)
+      const bxarray = designService.modal.selecteds.map(item => <number>item.get('x'))
+      const byarray = designService.modal.selecteds.map(item => <number>item.get('y'))
       const begin = {
         x: Math.min(...bxarray),
         y: Math.min(...byarray)
       }
 
-      const exarray = designService.modal.selecteds.map(item => item.x + item.width)
-      const eyarray = designService.modal.selecteds.map(item => item.y + item.height)
+      const exarray = designService.modal.selecteds.map(item => <number>item.get('x') + <number>item.get('width'))
+      const eyarray = designService.modal.selecteds.map(item => <number>item.get('y') + <number>item.get('height'))
       const end = {
         x: Math.max(...exarray),
         y: Math.max(...eyarray)
@@ -32,12 +33,38 @@ export default defineComponent({
 
     let orgPosition = { x: 0, y: 0, width: 0, height: 0 }
     const oldWidgetPosition = new Map<string, {x: number, y: number, width: number, height: number}>()
+
+    const onMouseDown = (directparam: Array<string>, event: MouseEvent) => {
+      event.preventDefault()
+      event.stopPropagation()
+
+      window.addEventListener('mousemove', onMouseMoveHandler, true)
+      window.addEventListener('mouseup', onMouseUp, true)
+
+      direct = directparam
+      orgMousePosition = { x: event.clientX, y: event.clientY }
+
+      orgPosition = { ...position.value }
+      oldWidgetPosition.clear()
+      for (let i = 0; i < designService.modal.selecteds.length; i++) {
+        const widget = designService.modal.selecteds[i]
+        oldWidgetPosition.set(<string>widget.get('id'),
+          { x: <number>widget.get('x'), y: <number>widget.get('y'),
+            width: <number>widget.get('width'), height: <number>widget.get('height') })
+        // 移除被选中widget的边界线
+        // designService.alignmentLine?.delBoundaryLine(<string>widget.get('id'))
+        emit('reszie-start', widget.toJSON())
+      }
+    }
+
     const onMouseMoveHandler = (event: MouseEvent) => {
       let changed = false
       const newposition = { x: 0, y: 0, width: 0, height: 0 }
+      // 左右
       if (direct[0] !== 'n') {
         let widthDirect = 1
         const hspan = (event.clientX - orgMousePosition.x) / designService.modal.scale
+        // 左
         if (direct[0] === 'l') {
           widthDirect = -1
           newposition.x = hspan
@@ -54,9 +81,11 @@ export default defineComponent({
         changed = true
       }
 
+      // 上下
       if (direct[1] !== 'n') {
         let heightDirect = 1
         const vspan = event.clientY - orgMousePosition.y
+        // 上
         if (direct[1] === 't') {
           heightDirect = -1
           newposition.y = vspan
@@ -75,35 +104,21 @@ export default defineComponent({
       if (changed) {
         for (let i = 0; i < designService.modal.selecteds.length; i++) {
           const widget = designService.modal.selecteds[i]
-          const old = oldWidgetPosition.get(widget.id)
+          const old = oldWidgetPosition.get(widget.get('id') as string)
           if (widget && old) {
-            widget.x = old.x + newposition.x
-            widget.y = old.y + newposition.y
-            widget.width = old.width + newposition.width
-            widget.height = old.height + newposition.height
+            widget.set('x', old.x + newposition.x)
+            widget.set('y', old.y + newposition.y)
+            widget.set('width', old.width + newposition.width)
+            widget.set('height', old.height + newposition.height)
+            widget.set('baseX', old.x + newposition.x)
+            widget.set('baseY', old.y + newposition.y)
+            widget.set('resizing', true)
 
-            emit('resizeing', widget)
+            emit('resizeing', widget.toJSON())
           }
         }
-      }
-    }
-
-    const onMouseDown = (directparam: Array<string>, event: MouseEvent) => {
-      event.preventDefault()
-      event.stopPropagation()
-
-      window.addEventListener('mousemove', onMouseMoveHandler, true)
-      window.addEventListener('mouseup', onMouseUp, true)
-
-      direct = directparam
-      orgMousePosition = { x: event.clientX, y: event.clientY }
-
-      orgPosition = { ...position.value }
-      oldWidgetPosition.clear()
-      for (let i = 0; i < designService.modal.selecteds.length; i++) {
-        const widget = designService.modal.selecteds[i]
-        oldWidgetPosition.set(widget.id, { x: widget.x, y: widget.y, width: widget.width, height: widget.height })
-        emit('reszie-start', widget)
+        // 吸附
+        designService.alignmentLine?.onBoundaryMove(designService.modal.selecteds, direct)
       }
     }
 
@@ -112,7 +127,10 @@ export default defineComponent({
       window.removeEventListener('mouseup', onMouseUp, true)
       for (let i = 0; i < designService.modal.selecteds.length; i++) {
         const widget = designService.modal.selecteds[i]
-        emit('reszie-start', widget)
+        widget.set('resizing', false)
+        // 添加选中widget的边界线
+        // designService.alignmentLine?.addBoundaryLine(<DesignWidget>widget.toJSON())
+        emit('reszie-start', widget.toJSON())
       }
       oldWidgetPosition.clear()
     }
@@ -332,7 +350,6 @@ export default defineComponent({
   },
 
   render() {
-    console.log("render szie box ");
     return h(
       'div',
       {},

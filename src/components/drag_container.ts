@@ -11,7 +11,10 @@ export default defineComponent({
       type: Object as PropType<DesignWidget>,
       required: true
     },
-
+    widgetIdx: {
+      type: Number,
+      default: 0
+    },
     radius: {
       type: Number,
       default: 0
@@ -63,7 +66,8 @@ export default defineComponent({
             },
             onmousedown: (event: MouseEvent) => {
               if (props.value.enableDragable) {
-                draggingService.mousedownHandler(event, props.value)
+                const yWidget = service.syncService.yWidget.get(props.widgetIdx)
+                draggingService.mousedownHandler(event, yWidget)
                 emit('drag-start', props.value)
               }
             }
@@ -79,6 +83,10 @@ export default defineComponent({
       }
 
       let transform = 'translate(' + panelPoint.x + 'px,' + panelPoint.y + 'px)'
+
+      if(props.value.state === -1){
+        transform += ` scale(${service.modal.scale})`
+      }
       if (props.value.state === 3 || props.value.state === 4) {
         transform += ' scale(1)'
       }
@@ -88,11 +96,11 @@ export default defineComponent({
       return transform
     }
 
-    return { container, containerClass, renderCover, cssTransform }
+    return { container, containerClass, renderCover, cssTransform,service }
   },
 
   render() {
-    console.log("render drag container ", this.$props.value.id);
+    // console.log("render drag container ", this.$props.value.id);
     return h(
       'div',
       {
@@ -107,7 +115,13 @@ export default defineComponent({
       },
       [
         this.$slots.default && this.$slots.default(),
-        this.renderCover()
+        this.renderCover(),
+        // this.$props.value.x, '-', this.$props.value.y, h('div'),
+        // this.$props.value.state, h('div'),
+        // this.$props.value.moveing+'', h('div'),
+        // this.$props.value.resizing+'', h('div'),
+        // this.$props.value.baseX, '-', this.$props.value.baseY, h('div'),
+        // this.$props.value.width, '-', this.$props.value.height
       ]
     )
   }
