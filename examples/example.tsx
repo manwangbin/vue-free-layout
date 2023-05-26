@@ -2,9 +2,12 @@ import DesignPanel from '@/components/design_panel'
 import { defineComponent, Ref, ref } from 'vue'
 import Header from './header'
 import WidgetPanel from './widget_panel'
+import OperationPanel from "./operation_panel.vue";
+
 import { DesignPanelRef, Widget } from '@/types'
 import LtLayoutService from './lt_layout.service'
 import './style.less'
+import { useDesignPanel } from "../src/hooks/useDesignPanel";
 
 export default defineComponent({
   name: 'ExamplePanel',
@@ -17,13 +20,12 @@ export default defineComponent({
     const ltLayoutService = new LtLayoutService()
     const designPanel:Ref<DesignPanelRef|null> = ref(null)
 
-    const createWidgetHandler = (widget: Widget) => {
-      if (designPanel.value && designPanel.value) {
-        designPanel.value.createWidget(widget)
-      }
-    }
+    const {
+      createWidget
+    } = useDesignPanel(designPanel)
 
-    return { designPanel, createWidgetHandler }
+
+    return { designPanel, createWidget }
   },
 
   render () {
@@ -41,8 +43,8 @@ export default defineComponent({
         adsorbSpan={10}
         v-slots={{
           header: () => <Header />,
-          left: () => <WidgetPanel onCreateWidget={(widget: Widget) => this.createWidgetHandler(widget)} />,
-          right: () => <div style="width:200px; background: #ffffff"/>,
+          left: () => <WidgetPanel onCreateWidget={(widget: Widget) => this.createWidget(widget)} />,
+          right: () => <div style="width:200px; background: #ffffff"><OperationPanel></OperationPanel></div>,
           item: (widget:any) => <input style="width: 100%;box-sizing: border-box;"></input>
         }}
         >

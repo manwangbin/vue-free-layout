@@ -39,8 +39,10 @@
   },
   "dependencies": {
     "core-js": "^3.8.3",
+    "html2canvas": "^1.4.1",
     "nanoid": "^3.3.4",
     "postcss-import": "^14.1.0",
+    "print-js": "^1.6.0",
     "vue": "^3.2.13",
     "vue-inline-svg": "^3.1.0",
     "y-websocket": "^1.5.0",

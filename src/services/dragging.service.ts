@@ -42,8 +42,6 @@ export default class DraggingService {
       const yWidget = this.service.modal.selecteds[i]
       yWidget.set('moveing', true)
       this.orgPosition.set(yWidget.get('id') as string, { x: yWidget.get('x'), y: yWidget.get('y') } as Point)
-      // 开始移动的组件删除他们的边界线
-      // this.service.alignmentLine?.delBoundaryLine(yWidget.get('id') as string)
     }
   }
 
@@ -71,7 +69,7 @@ export default class DraggingService {
         this.emit('drag-moving', yWidget.toJSON())
       }
     }
-    this.service.alignmentLine?.onWidgetGroupMove(this.service.modal.selecteds)
+    this.service.alignLineService?.onWidgetGroupMove(this.service.modal.selecteds)
   }
 
   dragEndHandler = (event: MouseEvent) => {
@@ -85,10 +83,6 @@ export default class DraggingService {
       const yWidget = this.service.modal.selecteds[i]
       yWidget.set('moveing', false)
       yWidget.set('state', 1)
-      // 停止移动的组件添加他们的边界线
-      // this.service.alignmentLine?.addBoundaryLine(<DesignWidget>yWidget.toJSON())
-      // 停止移动后隐藏所有边界线
-      // this.service.alignmentLine?.hideAllLine()
       this.emit('drag-end', yWidget.toJSON())
     }
 

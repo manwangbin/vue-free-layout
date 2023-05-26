@@ -13,23 +13,7 @@ export default defineComponent({
     const designService = inject(DesignService.token) as DesignService
     const service = new DraggingService(designService, emit)
 
-    const position = computed(() => {
-      const bxarray = designService.modal.selecteds.map(item => <number>item.get('x'))
-      const byarray = designService.modal.selecteds.map(item => <number>item.get('y'))
-      const begin = {
-        x: Math.min(...bxarray),
-        y: Math.min(...byarray)
-      }
-
-      const exarray = designService.modal.selecteds.map(item => <number>item.get('x') + <number>item.get('width'))
-      const eyarray = designService.modal.selecteds.map(item => <number>item.get('y') + <number>item.get('height'))
-      const end = {
-        x: Math.max(...exarray),
-        y: Math.max(...eyarray)
-      }
-
-      return { x: begin.x, y: begin.y, width: (end.x - begin.x), height: (end.y - begin.y) }
-    })
+    const position = designService.selectedPosition
 
     let orgPosition = { x: 0, y: 0, width: 0, height: 0 }
     const oldWidgetPosition = new Map<string, {x: number, y: number, width: number, height: number}>()
@@ -51,8 +35,6 @@ export default defineComponent({
         oldWidgetPosition.set(<string>widget.get('id'),
           { x: <number>widget.get('x'), y: <number>widget.get('y'),
             width: <number>widget.get('width'), height: <number>widget.get('height') })
-        // 移除被选中widget的边界线
-        // designService.alignmentLine?.delBoundaryLine(<string>widget.get('id'))
         emit('reszie-start', widget.toJSON())
       }
     }
@@ -118,7 +100,7 @@ export default defineComponent({
           }
         }
         // 吸附
-        designService.alignmentLine?.onBoundaryMove(designService.modal.selecteds, direct)
+        designService.alignLineService?.onBoundaryMove(designService.modal.selecteds, direct)
       }
     }
 
@@ -128,21 +110,19 @@ export default defineComponent({
       for (let i = 0; i < designService.modal.selecteds.length; i++) {
         const widget = designService.modal.selecteds[i]
         widget.set('resizing', false)
-        // 添加选中widget的边界线
-        // designService.alignmentLine?.addBoundaryLine(<DesignWidget>widget.toJSON())
         emit('reszie-start', widget.toJSON())
       }
       oldWidgetPosition.clear()
     }
 
-    const hx = computed(() => designService.modal.pageRect.x + position.value.x + 4)
-    const htop = computed(() => designService.modal.pageRect.y + position.value.y - 4)
-    const hbottom = computed(() => designService.modal.pageRect.y + position.value.y + position.value.height - 4)
+    const hx = computed(() => position.value.x + 4)
+    const htop = computed(() => position.value.y - 4)
+    const hbottom = computed(() => position.value.y + position.value.height - 4)
     const hwidth = computed(() => position.value.width > 8 ? (position.value.width - 8) : 0)
 
-    const vtop = computed(() => designService.modal.pageRect.y + position.value.y + 4)
-    const vleft = computed(() => designService.modal.pageRect.x + position.value.x - 4)
-    const vright = computed(() => designService.modal.pageRect.x + position.value.x + position.value.width - 4)
+    const vtop = computed(() => position.value.y + 4)
+    const vleft = computed(() => position.value.x - 4)
+    const vright = computed(() => position.value.x + position.value.width - 4)
     const vheight = computed(() => position.value.height > 8 ? position.value.height - 8 : 0)
 
     const renderBorders = () => {
@@ -236,8 +216,8 @@ export default defineComponent({
       ]
     }
 
-    const conLTX = computed(() => designService.modal.pageRect.x + position.value.x - 6)
-    const conLTY = computed(() => designService.modal.pageRect.y + position.value.y - 6)
+    const conLTX = computed(() => position.value.x - 6)
+    const conLTY = computed(() => position.value.y - 6)
     const conRTX = computed(() => conLTX.value + position.value.width)
     const conRBX = computed(() => conLTY.value + position.value.height)
     const drawConerBox = () => {
@@ -335,8 +315,8 @@ export default defineComponent({
           {
             class: 'size-cover',
             style: {
-              left: (designService.modal.pageRect.x + position.value.x) + 'px',
-              top: (designService.modal.pageRect.y + position.value.y) + 'px',
+              left: (position.value.x) + 'px',
+              top: (position.value.y) + 'px',
               width: position.value.width + 'px',
               height: position.value.height + 'px'
             },

@@ -1,12 +1,13 @@
 import { DesignWidget, Widget } from './../types'
-import { defineComponent, h, onMounted, ref, Ref, PropType, onBeforeUnmount, watch } from "vue";
+import { defineComponent, h, onMounted, ref, Ref, PropType, InjectionKey, provide } from "vue";
 import DesignService from '../services/design.service'
 import DesignCanvase from './design_canvase'
 import { getClientRect } from '../util/size.util'
 import DragContainer from './drag_container'
 import CRuler from './c_ruler'
 import '../style.less'
-import AlignmentLine from "@/services/alignmentLine.service";
+import AlignmentLineService from "@/services/alignmentLine.service";
+
 
 const RULER_WIDTH = 24
 export default defineComponent({
@@ -95,14 +96,16 @@ export default defineComponent({
     }
   },
 
-  emits: ['update:value', 'page-resized', 'added', 'deleted', 'drag-start', 'drag-moving', 'drag-end', 'resize-start', 'resizeing', 'resize-end'],
+  emits: ['update:value', 'page-resized', 'added', 'deleted', 'drag-start',
+    'drag-moving', 'drag-end', 'resize-start', 'resizeing', 'resize-end',
+    'del-widgets'
+  ],
   setup (props, { emit, slots }) {
+
     const designContainer: Ref<HTMLElement | undefined> = ref()
     const designBody: Ref<HTMLElement | undefined> = ref()
 
-    const alignmentLine = !props.showAlign&&!props.enableAdsorb?
-      null:new AlignmentLine(props)
-    const service = new DesignService(props.value, props.width, props.height, emit, alignmentLine)
+    const service = new DesignService(props, emit)
 
     /**
      * 添加新的控件

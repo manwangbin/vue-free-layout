@@ -47,11 +47,11 @@ export interface AlignmentOption {
 }
 
 
-export default class AlignmentLine {
+export default class AlignmentLineService {
 
   boundaryLine: Array<BoundaryLine> = []
 
-  constructor(public option: AlignmentOption) {
+  constructor(public option: AlignmentOption, public designService: DesignService) {
     this.boundaryLine = reactive([])
   }
 
@@ -72,7 +72,7 @@ export default class AlignmentLine {
 
   // 处理widget移动
   handlerWidgetMove(boundary: Boundary, adsorbHandler: Function){
-    // 横行距离最小的线
+    // 横向距离最小的线
     let minRow: any = null
     // 纵向距离最小的线
     let minCol: any = null
@@ -363,6 +363,7 @@ export default class AlignmentLine {
     }
   }
 
+  // 获取widget的边界
   widget2Boundary(widget: DesignWidget){
     return {
       left: widget.x,
@@ -372,6 +373,7 @@ export default class AlignmentLine {
     }
   }
 
+  // 新增线
   addBoundaryLine(widget: DesignWidget){
     const lineList = [
       {
@@ -419,6 +421,7 @@ export default class AlignmentLine {
     })
   }
 
+  // 删除线
   delBoundaryLine(id: string){
     let idx = this.boundaryLine.findIndex(item=>item.id === id+'-top')
     idx!==-1&&this.boundaryLine.splice(idx,1)
@@ -430,6 +433,7 @@ export default class AlignmentLine {
     idx!==-1&&this.boundaryLine.splice(idx,1)
   }
 
+  // 隐藏所有线
   hideAllLine(){
     this.boundaryLine.forEach(line=>{
       line.show = false
@@ -456,5 +460,83 @@ export default class AlignmentLine {
         this.hideAllLine()
       }
     }
+  }
+
+  // 左对齐
+  leftJustify(){
+    const widgets = this.designService.modal.selecteds.map(item=>item.toJSON()) as DesignWidget[]
+    const {left} = this.getBoundaryByWidget(widgets)
+    this.designService.modal.selecteds.forEach(yWidgets=>yWidgets.set('x', left))
+  }
+
+  // 右对齐
+  rightJustify(){
+    const widgets = this.designService.modal.selecteds.map(item=>item.toJSON()) as DesignWidget[]
+    const {right} = this.getBoundaryByWidget(widgets)
+    this.designService.modal.selecteds.forEach(yWidgets=>{
+      const width = yWidgets.get('width') as number
+      yWidgets.set('x', right - width)
+    })
+  }
+
+  // 上对齐
+  topJustify(){
+    const widgets = this.designService.modal.selecteds.map(item=>item.toJSON()) as DesignWidget[]
+    const {top} = this.getBoundaryByWidget(widgets)
+    this.designService.modal.selecteds.forEach(yWidgets=>yWidgets.set('y', top))
+  }
+
+  // 下对齐
+  bottomJustify(){
+    const widgets = this.designService.modal.selecteds.map(item=>item.toJSON()) as DesignWidget[]
+    const {bottom} = this.getBoundaryByWidget(widgets)
+    this.designService.modal.selecteds.forEach(yWidgets=>{
+      const height = yWidgets.get('height') as number
+      yWidgets.set('y', bottom - height)
+    })
+  }
+
+  // 横向两端对齐
+  rowBetween(){
+    const widgets = this.designService.modal.selecteds.map(item=>item.toJSON()) as DesignWidget[]
+    const {left, right} = this.getBoundaryByWidget(widgets)
+    // 计算所有widget的宽度
+    const widgetsWidth = widgets.reduce((total, widget)=>total + widget.width, 0)
+    const boundaryWidth = right - left
+    const interval = (boundaryWidth - widgetsWidth) / (widgets.length - 1)
+
+    let currentLeft = left
+    this.designService.modal.selecteds.sort((a, b)=><number>a.get('x') - <number>b.get('x'))
+      .forEach((yWidget,index)=>{
+        if(index===0){
+          currentLeft += yWidget.get('width') as number
+        }else{
+          currentLeft += interval
+          yWidget.set('x', currentLeft)
+          currentLeft += yWidget.get('width') as number
+        }
+      })
+  }
+
+  // 纵向两端对齐
+  columnBetween(){
+    const widgets = this.designService.modal.selecteds.map(item=>item.toJSON()) as DesignWidget[]
+    const {top, bottom} = this.getBoundaryByWidget(widgets)
+    // 计算所有widget的宽度
+    const widgetsHeight = widgets.reduce((total, widget)=>total + widget.height, 0)
+    const boundaryHeight = bottom - top
+    const interval = (boundaryHeight - widgetsHeight) / (widgets.length - 1)
+
+    let currentTop = top
+    this.designService.modal.selecteds.sort((a, b)=><number>a.get('y') - <number>b.get('y'))
+      .forEach((yWidget,index)=>{
+        if(index===0){
+          currentTop += yWidget.get('height') as number
+        }else{
+          currentTop += interval
+          yWidget.set('y', currentTop)
+          currentTop += yWidget.get('height') as number
+        }
+      })
   }
 }

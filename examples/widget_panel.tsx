@@ -1,12 +1,14 @@
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, inject } from "vue";
 import { nanoid } from 'nanoid'
 import { Widget } from '@/types'
+import DesignService from "../src/services/design.service";
 
 export default defineComponent({
   name: 'WidgetPanel',
 
   emits: ['create-widget'],
   setup (_, { emit }) {
+
     const renderWidgets = () => {
       return h(
         'div',

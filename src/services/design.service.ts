@@ -1,16 +1,14 @@
 import { DesignWidget, Point, Widget } from '../types'
 import { computed } from '@vue/reactivity'
-import { ComputedRef, InjectionKey, provide, reactive } from "vue";
-import AlignmentLine, { BoundaryLine } from "@/services/alignmentLine.service";
-import SynchronizeService, { UpdateData, YWidget } from "@/services/synchronize.service";
-import * as Y from "yjs";
-import { CheckType } from "@/util/checkType";
+import { ComputedRef, InjectionKey, provide, reactive, ref, Ref } from "vue";
+import AlignmentLineService, { BoundaryLine } from "@/services/alignmentLine.service";
+import SynchronizeService, { YWidget } from "@/services/synchronize.service";
 
-interface Modal {
+export interface Modal {
   newWidget?: DesignWidget;
   // 页面大小
   rect: { x: number, y: number, width: number, height: number };
-  // 画板区域（标尺）大小
+  // 画板区域Modal（标尺）大小
   canvaseRect: { x: number, y: number, width: number, height: number };
   // 画布大小
   pageRect: { x: number, y: number, width: number, height: number, cwidth: number, cheight: number };
@@ -30,6 +28,8 @@ export default class DesignService {
 
   static SPAN = 40
 
+  drawerRef: Ref<HTMLElement | null> = ref(null)
+
   selectedNewWidget?: Widget;
 
   selectedMousePoint?: Point;
@@ -42,18 +42,53 @@ export default class DesignService {
 
   syncService: SynchronizeService<DesignWidget>;
 
-  constructor (widgets: Array<Widget>,
-               width: number, height: number,
-               public emit: (event:'page-resized' | 'drag-moving' | 'drag-end', ...args: any)=>void,
-               public alignmentLine:AlignmentLine|null) {
-    if (height === 0) {
-      height = 500
+  alignLineService: AlignmentLineService
+
+  // 所有选中元素构成的位置
+  selectedPosition = computed(() => {
+    const bxarray = this.modal.selecteds.map(item => <number>item.get('x'))
+    const byarray = this.modal.selecteds.map(item => <number>item.get('y'))
+    const begin = {
+      x: Math.min(...bxarray),
+      y: Math.min(...byarray)
     }
+
+    const exarray = this.modal.selecteds.map(item => <number>item.get('x') + <number>item.get('width'))
+    const eyarray = this.modal.selecteds.map(item => <number>item.get('y') + <number>item.get('height'))
+    const end = {
+      x: Math.max(...exarray),
+      y: Math.max(...eyarray)
+    }
+
+    return {
+      x: begin.x + this.modal.pageRect.x,
+      y: begin.y + this.modal.pageRect.y,
+      width: (end.x - begin.x),
+      height: (end.y - begin.y)
+    }
+  })
+
+  constructor (props: any,
+               public emit: (event:'page-resized' | 'drag-moving' | 'drag-end', ...args: any)=>void) {
     provide(DesignService.token, this)
 
     this.syncService = new SynchronizeService()
+    this.alignLineService = new AlignmentLineService(props, this)
 
-    this.boundaryLine = computed(()=>this.alignmentLine?.boundaryLine||[])
+    let {
+      value: widgets,
+      width, height
+    }: {
+      value: DesignWidget[],
+      width: number,
+      height: number
+    } = props
+
+    if (height === 0) {
+      height = 500
+    }
+
+    this.boundaryLine = computed(()=>this.alignLineService?.boundaryLine||[])
     this.modal = reactive({
       scale: 1,
 
@@ -86,7 +121,7 @@ export default class DesignService {
     this.syncService.onDataUpdate = (data, updateData)=>{
       updateData.forEach(update=>{
         update.handler(this.modal.widgets)
-        this.alignmentLine?.handlerAlignmentLine(update)
+        this.alignLineService?.handlerAlignmentLine(update)
       })
     }
     this.modal.canvaseRect.height = height + DesignService.SPAN * 2 / this.modal.scale
@@ -255,7 +290,7 @@ export default class DesignService {
         x, y
       }
 
-      this.alignmentLine?.onNewWidgetMove([widget], this)
+      this.alignLineService?.onNewWidgetMove([widget], this)
 
       this.emit("drag-moving", this.modal.newWidget)
     }
@@ -280,9 +315,6 @@ export default class DesignService {
       const yWidget = this.syncService.createWidget(widget)
       this.syncService.yWidget.push([yWidget])
       this.setSelected([yWidget])
-      // this.alignmentLine?.addBoundaryLine(widget)
-      // 停止移动后隐藏所有边界线
-      // this.alignmentLine?.hideAllLine()
       this.emit('drag-end', widget)
     }
 
@@ -315,5 +347,12 @@ export default class DesignService {
     } else {
       return false
     }
+  }
+
+  deleteWidget(widget: DesignWidget){
+    const widgetIdx = this.modal.widgets.findIndex(item=>item.id === widget.id)
+    if(widgetIdx===-1) return
+    this.syncService.yWidget.delete(widgetIdx, 1)
+    this.alignLineService?.delBoundaryLine(widget.id)
   }
 }

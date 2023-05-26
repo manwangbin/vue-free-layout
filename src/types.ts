@@ -1,3 +1,5 @@
+import DesignService from "@/services/design.service";
+
 export interface Point {
   // 横坐标（组件渲染时的坐标）
   x: number;
@@ -38,6 +40,7 @@ export interface DesignWidget extends Widget{
 }
 
 export interface DesignPanelRef {
+  service: DesignService;
   createWidget(widget: Widget): void;
   getPageWidgets(): Array<DesignWidget>;
 }

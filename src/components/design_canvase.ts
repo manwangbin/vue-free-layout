@@ -1,6 +1,7 @@
 import { DesignWidget, Point, Widget } from "@/types"
 import { defineComponent, h, inject, onMounted, PropType, ref, Ref, watch } from "vue";
 import SizeBox from './size_box'
+import OperationBar from "./operation_bar";
 import DesignService from '@/services/design.service'
 import DragContainer from './drag_container'
 import { computed } from '@vue/reactivity'
@@ -56,6 +57,8 @@ export default defineComponent({
     const drawer: Ref<HTMLElement | null> = ref(null)
 
     const designService = inject(DesignService.token) as DesignService
+
+    designService.drawerRef = drawer
 
     const containerWidth = computed(() => designService.modal.pageRect.cwidth * designService.modal.scale)
     const containerHeight = computed(() => designService.modal.pageRect.cheight * designService.modal.scale)
@@ -155,7 +158,7 @@ export default defineComponent({
         'div',
         {
           ref: 'drawer',
-          class: 'drawer',
+          id: 'drawer',
           style: {
             background: props.drawerBackgroud,
             left: designService.modal.pageRect.x + 'px',
@@ -213,7 +216,7 @@ export default defineComponent({
       if(designService.boundaryLine.value){
         return designService.boundaryLine.value.map(line=>{
           const {x, y} = designService.pageP2CavnaseP({ x: line.x, y: line.y })
-          const option = designService.alignmentLine?.option
+          const option = designService.alignLineService?.option
           const border = `${option?.alignWeight}px ${option?.alignColor} dashed`
           return  h(
             'div',
@@ -240,13 +243,22 @@ export default defineComponent({
       )
     }
 
+    // 操作栏
+    const renderOperationBar = () => {
+      if(!designService.modal.selecteds || designService.modal.selecteds.length===0) return
+      return h(
+        OperationBar,
+      )
+    }
+
     const renderChildren = () => {
       return [
         renderDrawer(),
         renderWidgets(),
         renderSizeBorders(),
         renderSelectedArea(),
-        renderAlignmentLine()
+        renderAlignmentLine(),
+        renderOperationBar()
       ]
     }
 

@@ -39,7 +39,7 @@
         top: 0px;
         transform-origin: left top;
 
-        .drawer {
+        #drawer {
           position: absolute;
           box-shadow: 0 0 6px @-drawer-shadow-color;
 
@@ -196,5 +196,24 @@
 
   .alignment-line{
     position: absolute;
+  }
+
+  .operation-bar{
+    position: absolute;
+    top: -25px;
+    left: 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0 2px;
+    width: 100%;
+    height: 25px;
+    background: #e2ebfe;
+    box-sizing: border-box;
+    .del-icon{
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
   }
 }
