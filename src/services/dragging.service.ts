@@ -43,6 +43,9 @@ export default class DraggingService {
       yWidget.set('moveing', true)
       this.orgPosition.set(yWidget.get('id') as string, { x: yWidget.get('x'), y: yWidget.get('y') } as Point)
     }
+    this.service.emitter.emit('onMousedown', (yWidget: YWidget)=>{
+      this.orgPosition.set(yWidget.get('id') as string, { x: yWidget.get('x'), y: yWidget.get('y') } as Point)
+    })
   }
 
   dragHandler = (event: MouseEvent) => {
@@ -69,6 +72,9 @@ export default class DraggingService {
         this.emit('drag-moving', yWidget.toJSON())
       }
     }
+    if(this.service.modal.selecteds.length===1){
+      this.service.emitter.emit('onWidgetMove', this.service.modal.selecteds[0].toJSON())
+    }
     this.service.alignLineService?.onWidgetGroupMove(this.service.modal.selecteds)
   }
 
@@ -86,6 +92,9 @@ export default class DraggingService {
       this.emit('drag-end', yWidget.toJSON())
     }
 
+    if(this.service.modal.selecteds.length===1){
+      this.service.emitter.emit('onAddWidget', this.service.modal.selecteds[0])
+    }
     this.orgPosition.clear()
   }
 }

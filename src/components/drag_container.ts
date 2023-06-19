@@ -105,9 +105,9 @@ export default defineComponent({
 
     const cssTransform = () => {
       let panelPoint = { x: props.value.x, y: props.value.y }
-      if (props.value.state !== -1) {
-        panelPoint = service.pageP2CavnaseP({ x: props.value.x, y: props.value.y })
-      }
+      // if (props.value.state !== -1) {
+        // panelPoint = service.pageP2CavnaseP({ x: props.value.x, y: props.value.y })
+      // }
 
       let transform = 'translate(' + panelPoint.x + 'px,' + panelPoint.y + 'px)'
 
@@ -123,11 +123,10 @@ export default defineComponent({
       return transform
     }
 
-    return { container, containerClass, renderCover, renderOperationBar, cssTransform, service }
+    return { container, containerClass, renderCover, renderOperationBar, cssTransform, service, state: props.value.state }
   },
 
   render() {
-    // console.log("render drag container ", this.$props.value.id);
     return h(
       'div',
       {
@@ -137,7 +136,8 @@ export default defineComponent({
           transform: this.cssTransform(),
           width: this.$props.value.width + 'px',
           height: this.$props.value.height + 'px',
-          borderRadius: this.$props.radius + 'px'
+          borderRadius: this.$props.radius + 'px',
+          zIndex: this.state===-1 ? 2000:0
         }
       },
       [
@@ -145,8 +145,8 @@ export default defineComponent({
         this.renderCover(),
         // this.renderOperationBar(),
         // this.$props.value.x, '-', this.$props.value.y, h('div'),
-        'state    ', this.$props.value.state, h('div'),
-        'index    ', this.$props.widgetIdx
+        // 'state    ', this.$props.value.state, h('div'),
+        // 'index    ', this.$props.widgetIdx
         // this.$props.value.moveing+'', h('div'),
         // this.$props.value.resizing+'', h('div'),
         // this.$props.value.baseX, '-', this.$props.value.baseY, h('div'),

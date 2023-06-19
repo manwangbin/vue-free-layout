@@ -1,8 +1,7 @@
-import { computed, ComputedRef, inject, Ref } from "vue";
+import { computed, ComputedRef, inject, nextTick, onBeforeUnmount, Ref } from "vue";
 import { DesignPanelRef, Widget } from "@/types";
 import DesignService, { Modal } from "@/services/design.service";
-import html2canvas from "html2canvas";
-import printJS from "print-js";
+import { printHTML } from "@/utils/print";
 
 
 export function useDesignPanel(designPanel?: Ref<DesignPanelRef|null>){
@@ -16,11 +15,16 @@ export function useDesignPanel(designPanel?: Ref<DesignPanelRef|null>){
       return designService
     }
   })
+
   const designModal: ComputedRef<Modal> = computed(()=>service.value?.modal!)
 
-
   function createWidget(widget: Widget){
+
     service.value?.createWidgetHandler(widget)
+  }
+
+  function getPageRect(){
+    return designModal.value?.pageRect
   }
 
   function leftJustify(){
@@ -47,17 +51,54 @@ export function useDesignPanel(designPanel?: Ref<DesignPanelRef|null>){
     service.value?.alignLineService.columnBetween()
   }
 
-  function print(){
-      printJS({
-        printable: 'drawer',
-        type: 'html',
-        documentTitle: '',
-        targetStyles: ['*']
-      })
+  function changePageSize(width: number, height: number){
+    console.log(width, height);
+    service.value?.resizePage({
+      newWidth: Number(width),
+      newHeight: Number(height),
+      oldWidth: designModal.value.pageRect.width,
+      oldHeight: designModal.value.pageRect.height,
+      newPadding: designModal.value.pageRect.padding,
+      oldPadding: designModal.value.pageRect.padding
+    })
   }
+
+  function setPadding(padding: number[]){
+    const [top, right, bottom, left] = designModal.value.pageRect.padding
+    service.value?.setPadding(padding)
+    service.value?.resizePage({
+      newWidth: designModal.value.pageRect.width,
+      newHeight: designModal.value.pageRect.height,
+      oldWidth: designModal.value.pageRect.width,
+      oldHeight: designModal.value.pageRect.height,
+      newPadding: designModal.value.pageRect.padding,
+      oldPadding: [top, right, bottom, left]
+    })
+  }
+
+  function print(){
+    service.value?.setSelected([])
+    nextTick().then(()=>{
+      printHTML({
+        domId: 'drawer',
+        width: designModal.value.pageRect.width,
+        height: designModal.value.pageRect.height
+      })
+    })
+  }
+
+  function onLayout(callback: (event: any)=>void){
+    service.value?.emitter.on('onLayout', callback)
+  }
+
+  onBeforeUnmount(()=>{
+    service.value?.emitter.off('onLayout')
+  })
 
   return {
     designModal,
+    getPageRect,
+    onLayout,
     createWidget,
     leftJustify,
     rightJustify,
@@ -65,6 +106,8 @@ export function useDesignPanel(designPanel?: Ref<DesignPanelRef|null>){
     bottomJustify,
     rowBetween,
     columnBetween,
-    print
+    print,
+    changePageSize,
+    setPadding
   }
 }

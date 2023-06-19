@@ -26,7 +26,7 @@ const overrides = {
 }
 
 export default {
-  input: './src/index.ts',
+  input: './src/index.vue',
   output: {
     name,
     file: file('esm'),

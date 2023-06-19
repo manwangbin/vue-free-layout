@@ -2,7 +2,7 @@ import { reactive } from "vue";
 import { DesignWidget } from "@/types";
 import DesignService from "@/services/design.service";
 import { UpdateData, YWidget } from "@/services/synchronize.service";
-import { CheckType } from "@/util/checkType";
+import { CheckType } from "@/utils/checkType";
 import * as Y from "yjs";
 
 
@@ -43,7 +43,8 @@ export interface AlignmentOption {
   alignWeight: number,
   alignColor: string,
   showAlignSpan: number,
-  adsorbSpan: number
+  adsorbSpan: number,
+  pagePadding: [number,number,number,number]
 }
 
 
@@ -52,7 +53,50 @@ export default class AlignmentLineService {
   boundaryLine: Array<BoundaryLine> = []
 
   constructor(public option: AlignmentOption, public designService: DesignService) {
+    // 初始化边界线
     this.boundaryLine = reactive([])
+    designService.emitter.on('onLayout', this.setPaddingLine.bind(this))
+  }
+
+  setPaddingLine(){
+    this.designService.emitter.off('onLayout', this.setPaddingLine)
+    this.delBoundaryLine('padding')
+    const padding = this.designService.modal.pageRect.padding
+    this.boundaryLine.push(...[
+      {
+        id: 'padding-top',
+        direction: LineDirection.ROW,
+        show: false,
+        x: 0,
+        y: padding[0],
+        width: '100%',
+        height: '0'
+      },{
+        id: 'padding-bottom',
+        direction: LineDirection.ROW,
+        show: false,
+        x: 0,
+        y: this.designService.modal.pageRect.height - padding[2],
+        width: '100%',
+        height: '0'
+      },{
+        id: 'padding-left',
+        direction: LineDirection.COLUMN,
+        show: false,
+        x: padding[3],
+        y: 0,
+        width: '0',
+        height: '100%'
+      },{
+        id: 'padding-right',
+        direction: LineDirection.COLUMN,
+        show: false,
+        x: this.designService.modal.pageRect.width - padding[1],
+        y: 0,
+        width: '0',
+        height: '100%'
+      }
+    ])
   }
 
   // 监听newWidget移动的

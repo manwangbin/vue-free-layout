@@ -1,12 +1,11 @@
 import { DesignWidget, Widget } from './../types'
-import { defineComponent, h, onMounted, ref, Ref, PropType, InjectionKey, provide } from "vue";
+import { defineComponent, h, onMounted, ref, Ref, PropType, InjectionKey, provide, nextTick } from "vue";
 import DesignService from '../services/design.service'
 import DesignCanvase from './design_canvase'
-import { getClientRect } from '../util/size.util'
+import { getClientRect } from '../utils/size.util'
 import DragContainer from './drag_container'
 import CRuler from './c_ruler'
 import '../style.less'
-import AlignmentLineService from "@/services/alignmentLine.service";
 
 
 const RULER_WIDTH = 24
@@ -93,7 +92,13 @@ export default defineComponent({
     adsorbSpan: {
       type: Number,
       default: 10
-    }
+    },
+    // 页面内边距
+    pagePadding: {
+      type: Array,
+      default: 10
+    },
+
   },
 
   emits: ['update:value', 'page-resized', 'added', 'deleted', 'drag-start',
@@ -143,6 +148,9 @@ export default defineComponent({
         getClientRect(designBody.value).then(value => {
           service.modal.canvaseRect = value
           service.recountPage()
+          nextTick().then(()=>{
+            service.emitter.emit('onLayout')
+          })
         })
       }
     }
@@ -214,7 +222,7 @@ export default defineComponent({
       return h(
         DesignCanvase,
         {
-          class: 'canvase',
+          id: 'free-layout-canvas',
           scale: service.modal.scale,
           ...props,
           onDragMoving: (widget: DesignWidget) => { emit('drag-moving', widget); emit('update:value', service.modal.widgets); },

@@ -1,7 +1,6 @@
 import DesignService from '../services/design.service'
 import DraggingService from '../services/dragging.service'
 import { computed, defineComponent, h, inject } from 'vue'
-import { DesignWidget } from "@/types";
 const MIN_SPAN = 8
 
 export default defineComponent({

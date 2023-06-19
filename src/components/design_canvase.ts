@@ -92,17 +92,19 @@ export default defineComponent({
 
     const converClientP2PanelP = (event: MouseEvent) => {
       return {
-        x: (event.clientX - designService.modal.canvaseRect.x + designService.modal.scrollLeft) / designService.modal.scale,
-        y: (event.clientY - designService.modal.canvaseRect.y + designService.modal.scrollTop) / designService.modal.scale
+        x: (event.clientX - designService.modal.canvaseRect.x -
+          designService.modal.pageRect.x + designService.modal.scrollLeft) / designService.modal.scale,
+        y: (event.clientY - designService.modal.canvaseRect.y -
+          designService.modal.pageRect.y + designService.modal.scrollTop) / designService.modal.scale
       } as Point
     }
 
     const SELECTED_SPAN = 10
     const selectedArea: Ref<{ begin: Point | undefined, end: Point | undefined }> = ref({ begin: undefined, end: undefined })
     const bgmousedownHandler = (event: MouseEvent) => {
+      if(event.button!==0) return
       designService.clearnSelected()
       selectedArea.value.begin = converClientP2PanelP(event)
-
       window.addEventListener('mousemove', bgmousemoveHandler, true)
       window.addEventListener('mouseup', bgmouseupHandler, true)
     }
@@ -163,10 +165,17 @@ export default defineComponent({
             background: props.drawerBackgroud,
             left: designService.modal.pageRect.x + 'px',
             top: designService.modal.pageRect.y + 'px',
-            width: props.width + 'px',
-            height: props.height + 'px'
+            width: designService.modal.pageRect.width + 'px',
+            height: designService.modal.pageRect.height + 'px'
           }
-        }
+        },
+        [
+          renderWidgets(),
+          renderSizeBorders(),
+          renderSelectedArea(),
+          renderAlignmentLine(),
+          renderOperationBar()
+        ]
       )
     }
 
@@ -215,7 +224,6 @@ export default defineComponent({
     const renderAlignmentLine = () => {
       if(designService.boundaryLine.value){
         return designService.boundaryLine.value.map(line=>{
-          const {x, y} = designService.pageP2CavnaseP({ x: line.x, y: line.y })
           const option = designService.alignLineService?.option
           const border = `${option?.alignWeight}px ${option?.alignColor} dashed`
           return  h(
@@ -224,7 +232,7 @@ export default defineComponent({
               class: 'alignment-line',
               style: {
                 display: line.show && option?.showAlign?'':'none',
-                transform: `translate(${x}px, ${y}px)`,
+                transform: `translate(${line.x}px, ${line.y}px)`,
                 borderLeft: line.direction===LineDirection.COLUMN?border:'',
                 borderTop: line.direction===LineDirection.ROW?border:'',
                 width: line.width,
@@ -251,18 +259,7 @@ export default defineComponent({
       )
     }
 
-    const renderChildren = () => {
-      return [
-        renderDrawer(),
-        renderWidgets(),
-        renderSizeBorders(),
-        renderSelectedArea(),
-        renderAlignmentLine(),
-        renderOperationBar()
-      ]
-    }
-
-    return { drawer, designService, containerWidth, containerHeight, renderChildren, bgmousedownHandler }
+    return { drawer, designService, containerWidth, containerHeight, renderDrawer, bgmousedownHandler }
   },
 
   render () {
@@ -277,7 +274,7 @@ export default defineComponent({
         onmousedown: (event: MouseEvent) => this.bgmousedownHandler(event)
       },
       [
-        ...this.renderChildren(),
+        this.renderDrawer(),
       ]
     )
   }

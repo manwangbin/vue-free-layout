@@ -2,13 +2,25 @@
 <template>
   <div class="operation_panel">
     <div class="opt-group">
-      <div class="content">
+      <div class="opt-content">
         <div class="item" @click="print">打印</div>
       </div>
+      <div class="opt-title">纸张</div>
+      <div class="opt-content">
+        <Select v-model="model.pageSize"
+                :options="pageSize"
+                @change="pageSizeChange"></Select>
+      </div>
+      <div class="opt-title">页边距</div>
+      <div class="opt-content">
+        <Select v-model="model.pagePadding"
+                :options="pagePadding"
+                @change="pagePaddingChange"></Select>
+      </div>
     </div>
-    <div class="opt-group" v-show="designModal.selecteds.length>1">
-      <div class="title">对齐方式</div>
-      <div class="content">
+    <div class="opt-group" v-if="designModal.selecteds.length>1">
+      <div class="opt-title">对齐方式</div>
+      <div class="opt-content">
         <div class="item" @click="leftJustify">左对齐</div>
         <div class="item" @click="rightJustify">右对齐</div>
         <div class="item" @click="topJustify">上对齐</div>
@@ -17,11 +29,26 @@
         <div class="item" @click="columnBetween">垂直两端对齐</div>
       </div>
     </div>
+    <div class="opt-group" v-if="designModal.selecteds.length>1">
+      <div class="title">标签布局</div>
+      <div class="opt-content">
+        <RadioButton :options="layoutOpt"
+                     @change="layoutChange"></RadioButton>
+      </div>
+    </div>
+    <component v-if="designModal.selecteds.length === 1" :is="Package[widget.tag+'Opt']" v-bind="widget"></component>
   </div>
 </template>
 
 <script setup lang="ts">
+import { Package } from "./package/index";
+import Select from "./components/Select/index.vue";
+import RadioButton from "./components/RadioButton/index.vue";
 import { useDesignPanel } from "../src/hooks/useDesignPanel";
+import { computed, reactive } from "vue";
+import { pagePadding, layoutOpt, pageSize } from "./package/utils/options";
+import { useFields } from "./package/hooks";
+
 const {
   designModal,
   leftJustify,
@@ -30,9 +57,39 @@ const {
   bottomJustify,
   rowBetween,
   columnBetween,
-  print
+  print,
+  changePageSize,
+  setPadding
 } = useDesignPanel()
 
+const {
+  setDirection
+} = useFields()
+
+const widget = computed(()=>designModal.value.selecteds[0].toJSON())
+
+const model = reactive({
+  pageSize: '841,1189',
+  pagePadding: '30'
+})
+
+
+function layoutChange(opt){
+  designModal.value.selecteds.forEach(item=>{
+    const id = item.get('id') as string
+    setDirection(id, opt.value)
+  })
+}
+
+function pageSizeChange(val){
+  changePageSize.apply(null, val.split(','))
+}
+
+function pagePaddingChange(val){
+  if(val){
+    setPadding([Number(val)])
+  }
+}
 
 </script>
 
@@ -46,14 +103,14 @@ export default {
 <style lang='less' scoped>
 .operation_panel{
   padding: 10px;
-  .title{
+  *{
+    user-select: none;
   }
-  .content{
+  .opt-content{
     display: flex;
     flex-wrap: wrap;
-    padding: 10px 0;
     .item{
-      margin: 0 10px 5px 0;
+      margin-bottom: 10px;
       padding: 0 5px;
       height: 20px;
       text-align: center;

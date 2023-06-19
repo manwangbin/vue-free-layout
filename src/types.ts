@@ -12,7 +12,7 @@ export interface Widget extends Point {
   id: string;
   // 控件类型
   tag: string;
-  // 宽度，总宽度安置750来计算
+  // 宽度
   width: number;
   // 高度
   height: number;

@@ -1,7 +1,8 @@
-import { defineComponent, h, inject } from "vue";
+import { defineComponent } from "vue";
 import { nanoid } from 'nanoid'
-import { Widget } from '@/types'
-import DesignService from "../src/services/design.service";
+import { Widget } from "@/types";
+import { useDesignPanel } from "../src/hooks/useDesignPanel";
+import { FieldEnum, widgets } from "./package";
 
 export default defineComponent({
   name: 'WidgetPanel',
@@ -9,28 +10,75 @@ export default defineComponent({
   emits: ['create-widget'],
   setup (_, { emit }) {
 
-    const renderWidgets = () => {
-      return h(
-        'div',
-        {
-          style: { lineHeight: '50px', textAlign: 'center' },
-          onmousedown: () => emit('create-widget', { id: nanoid(), tag: 'input', x: 0, y: 0, width: 120, height: 60, margin: [0], enableResize: true, enableDragable: true } as Widget)
-        },
-        ['测试控件']
+    const {
+      designModal,
+      onLayout,
+      getPageRect
+    } = useDesignPanel()
+
+
+    onLayout(()=>{
+    })
+
+    function getWidgetOpt(widget: Record<string, any>): Widget{
+      const { width, padding } = getPageRect()
+      console.log(width, padding);
+      let widgetWidth = width - padding[1] - padding[3]
+      switch (widget.width.type){
+        case 'percentage':
+          widgetWidth = widgetWidth * widget.width.value / 100
+          break
+        case 'px':
+          widgetWidth = widget.width.value
+          break
+      }
+      return{
+        id: nanoid(),
+        x: 0, y: 0,
+        enableResize: true,
+        enableDragable: true,
+        ...widget,
+        width: widgetWidth,
+      }
+    }
+
+    const renderWidgets = (widget: any) => {
+      return (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          width: '50px',
+          height: '50px',
+          fontSize: '14px',
+          lineHeight: '',
+          textAlign: 'center',
+          border: '1px solid #eee',
+          borderRadius: '5px',
+          cursor: 'pointer'
+        }}
+             onmousedown={() => emit('create-widget', getWidgetOpt(widget))}>
+          {widget.name}
+        </div>
       )
     }
     return { renderWidgets }
   },
 
   render () {
-    return h(
-      'div',
-      {
-        style: { width: '200px', background: '#FFFFFF' }
-      },
-      [
-        this.renderWidgets()
-      ]
+    return (
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr 1fr',
+        alignContent: 'start',
+        gridRowGap: '10px',
+        padding: '10px',
+        width: '200px',
+        background: '#FFFFFF',
+        boxSizing: 'border-box'
+      }}>
+        {widgets.map(widget=>this.renderWidgets(widget))}
+      </div>
     )
   }
 })
