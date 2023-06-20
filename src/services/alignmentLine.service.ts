@@ -2,7 +2,7 @@ import { reactive } from "vue";
 import { DesignWidget } from "@/types";
 import DesignService from "@/services/design.service";
 import { UpdateData, YWidget } from "@/services/synchronize.service";
-import { CheckType } from "@/util/checkType";
+import { CheckType } from "@/utils/checkType";
 import * as Y from "yjs";
 
 
@@ -43,16 +43,60 @@ export interface AlignmentOption {
   alignWeight: number,
   alignColor: string,
   showAlignSpan: number,
-  adsorbSpan: number
+  adsorbSpan: number,
+  pagePadding: [number,number,number,number]
 }
 
 
-export default class AlignmentLine {
+export default class AlignmentLineService {
 
   boundaryLine: Array<BoundaryLine> = []
 
-  constructor(public option: AlignmentOption) {
+  constructor(public option: AlignmentOption, public designService: DesignService) {
+    // 初始化边界线
     this.boundaryLine = reactive([])
+    designService.emitter.on('onLayout', this.setPaddingLine.bind(this))
+  }
+
+  setPaddingLine(){
+    this.designService.emitter.off('onLayout', this.setPaddingLine)
+    this.delBoundaryLine('padding')
+    const padding = this.designService.modal.pageRect.padding
+    this.boundaryLine.push(...[
+      {
+        id: 'padding-top',
+        direction: LineDirection.ROW,
+        show: false,
+        x: 0,
+        y: padding[0],
+        width: '100%',
+        height: '0'
+      },{
+        id: 'padding-bottom',
+        direction: LineDirection.ROW,
+        show: false,
+        x: 0,
+        y: this.designService.modal.pageRect.height - padding[2],
+        width: '100%',
+        height: '0'
+      },{
+        id: 'padding-left',
+        direction: LineDirection.COLUMN,
+        show: false,
+        x: padding[3],
+        y: 0,
+        width: '0',
+        height: '100%'
+      },{
+        id: 'padding-right',
+        direction: LineDirection.COLUMN,
+        show: false,
+        x: this.designService.modal.pageRect.width - padding[1],
+        y: 0,
+        width: '0',
+        height: '100%'
+      }
+    ])
   }
 
   // 监听newWidget移动的
@@ -72,7 +116,7 @@ export default class AlignmentLine {
 
   // 处理widget移动
   handlerWidgetMove(boundary: Boundary, adsorbHandler: Function){
-    // 横行距离最小的线
+    // 横向距离最小的线
     let minRow: any = null
     // 纵向距离最小的线
     let minCol: any = null
@@ -287,6 +331,7 @@ export default class AlignmentLine {
     if(minTop!==null){
       // 吸附到这条线
       selecteds.forEach(yWidget=>{
+        if(yWidget.get('parent')!=='root') return
         // 离线的距离 = 边界位置 - 线的位置
         const offset = boundary.top - minTop.line.y
         // 渲染位置 = 鼠标位置 - 离线的距离
@@ -296,32 +341,35 @@ export default class AlignmentLine {
     }
     if(minBottom!==null){
       // 吸附到这条线
-      selecteds.forEach(widget=>{
+      selecteds.forEach(yWidget=>{
+        if(yWidget.get('parent')!=='root') return
         // 离线的距离 = 边界位置 - 线的位置
         const offset = boundary.bottom - minBottom.line.y
         // 渲染位置 = 鼠标位置 - 离线的距离
-        widget.set('y', <number>widget.get('baseY'))
-        widget.set('height', <number>widget.get('height') - offset)
+        yWidget.set('y', <number>yWidget.get('baseY'))
+        yWidget.set('height', <number>yWidget.get('height') - offset)
       })
     }
     if(minLeft!==null){
       // 吸附到这条线
-      selecteds.forEach(widget=>{
+      selecteds.forEach(yWidget=>{
+        if(yWidget.get('parent')!=='root') return
         // 离线的距离 = 边界位置 - 线的位置
         const offset = boundary.left - minLeft.line.x
         // 渲染位置 = 鼠标位置 - 离线的距离
-        widget.set('x', <number>widget.get('baseX') - offset)
-        widget.set('width', <number>widget.get('width') + offset)
+        yWidget.set('x', <number>yWidget.get('baseX') - offset)
+        yWidget.set('width', <number>yWidget.get('width') + offset)
       })
     }
     if(minRight!==null){
       // 吸附到这条线
-      selecteds.forEach(widget=>{
+      selecteds.forEach(yWidget=>{
+        if(yWidget.get('parent')!=='root') return
         // 离线的距离 = 边界位置 - 线的位置
         const offset = boundary.right - minRight.line.x
         // 渲染位置 = 鼠标位置 - 离线的距离
-        widget.set('x', <number>widget.get('baseX'))
-        widget.set('width', <number>widget.get('width') - offset)
+        yWidget.set('x', <number>yWidget.get('baseX'))
+        yWidget.set('width', <number>yWidget.get('width') - offset)
       })
     }
   }
@@ -363,6 +411,7 @@ export default class AlignmentLine {
     }
   }
 
+  // 获取widget的边界
   widget2Boundary(widget: DesignWidget){
     return {
       left: widget.x,
@@ -372,6 +421,7 @@ export default class AlignmentLine {
     }
   }
 
+  // 新增线
   addBoundaryLine(widget: DesignWidget){
     const lineList = [
       {
@@ -419,6 +469,7 @@ export default class AlignmentLine {
     })
   }
 
+  // 删除线
   delBoundaryLine(id: string){
     let idx = this.boundaryLine.findIndex(item=>item.id === id+'-top')
     idx!==-1&&this.boundaryLine.splice(idx,1)
@@ -430,6 +481,7 @@ export default class AlignmentLine {
     idx!==-1&&this.boundaryLine.splice(idx,1)
   }
 
+  // 隐藏所有线
   hideAllLine(){
     this.boundaryLine.forEach(line=>{
       line.show = false
@@ -442,7 +494,11 @@ export default class AlignmentLine {
       if(CheckType.isArray(updateData.deltaData?.insert)){
         updateData.deltaData?.insert.forEach(item=>{
           if(item instanceof Y.Map){
-            this.addBoundaryLine(item.toJSON() as DesignWidget)
+            if(item.get('parent')==='root'){
+              this.addBoundaryLine(item.toJSON() as DesignWidget)
+            }else{
+              this.delBoundaryLine(item.get('id'))
+            }
           }
         })
       }
@@ -452,9 +508,91 @@ export default class AlignmentLine {
         this.delBoundaryLine(updateData.target.get('id'))
       }else if(updateData.target.get('moveing') === false || updateData.target.get('resizing') === false){
         // 停止移动或停止改变大小新增线
-        this.addBoundaryLine(updateData.target.toJSON())
+        if(updateData.target.get('parent')==='root') {
+          this.addBoundaryLine(updateData.target.toJSON())
+        }else{
+          this.delBoundaryLine(updateData.target.get('id'))
+        }
         this.hideAllLine()
       }
     }
+  }
+
+  // 左对齐
+  leftJustify(){
+    const widgets = this.designService.modal.selecteds.map(item=>item.toJSON()) as DesignWidget[]
+    const {left} = this.getBoundaryByWidget(widgets)
+    this.designService.modal.selecteds.forEach(yWidgets=>yWidgets.set('x', left))
+  }
+
+  // 右对齐
+  rightJustify(){
+    const widgets = this.designService.modal.selecteds.map(item=>item.toJSON()) as DesignWidget[]
+    const {right} = this.getBoundaryByWidget(widgets)
+    this.designService.modal.selecteds.forEach(yWidgets=>{
+      const width = yWidgets.get('width') as number
+      yWidgets.set('x', right - width)
+    })
+  }
+
+  // 上对齐
+  topJustify(){
+    const widgets = this.designService.modal.selecteds.map(item=>item.toJSON()) as DesignWidget[]
+    const {top} = this.getBoundaryByWidget(widgets)
+    this.designService.modal.selecteds.forEach(yWidgets=>yWidgets.set('y', top))
+  }
+
+  // 下对齐
+  bottomJustify(){
+    const widgets = this.designService.modal.selecteds.map(item=>item.toJSON()) as DesignWidget[]
+    const {bottom} = this.getBoundaryByWidget(widgets)
+    this.designService.modal.selecteds.forEach(yWidgets=>{
+      const height = yWidgets.get('height') as number
+      yWidgets.set('y', bottom - height)
+    })
+  }
+
+  // 横向两端对齐
+  rowBetween(){
+    const widgets = this.designService.modal.selecteds.map(item=>item.toJSON()) as DesignWidget[]
+    const {left, right} = this.getBoundaryByWidget(widgets)
+    // 计算所有widget的宽度
+    const widgetsWidth = widgets.reduce((total, widget)=>total + widget.width, 0)
+    const boundaryWidth = right - left
+    const interval = (boundaryWidth - widgetsWidth) / (widgets.length - 1)
+
+    let currentLeft = left
+    this.designService.modal.selecteds.sort((a, b)=><number>a.get('x') - <number>b.get('x'))
+      .forEach((yWidget,index)=>{
+        if(index===0){
+          currentLeft += yWidget.get('width') as number
+        }else{
+          currentLeft += interval
+          yWidget.set('x', currentLeft)
+          currentLeft += yWidget.get('width') as number
+        }
+      })
+  }
+
+  // 纵向两端对齐
+  columnBetween(){
+    const widgets = this.designService.modal.selecteds.map(item=>item.toJSON()) as DesignWidget[]
+    const {top, bottom} = this.getBoundaryByWidget(widgets)
+    // 计算所有widget的宽度
+    const widgetsHeight = widgets.reduce((total, widget)=>total + widget.height, 0)
+    const boundaryHeight = bottom - top
+    const interval = (boundaryHeight - widgetsHeight) / (widgets.length - 1)
+
+    let currentTop = top
+    this.designService.modal.selecteds.sort((a, b)=><number>a.get('y') - <number>b.get('y'))
+      .forEach((yWidget,index)=>{
+        if(index===0){
+          currentTop += yWidget.get('height') as number
+        }else{
+          currentTop += interval
+          yWidget.set('y', currentTop)
+          currentTop += yWidget.get('height') as number
+        }
+      })
   }
 }

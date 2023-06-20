@@ -1,12 +1,10 @@
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
-import { nanoid } from "nanoid";
-import { InjectionKey, onBeforeUnmount, provide } from "vue";
-import { DesignWidget, Mixin } from "@/types";
-import { CheckType } from "@/util/checkType";
-import AlignmentLine from "@/services/alignmentLine.service";
+import { onBeforeUnmount } from "vue";
+import { DesignWidget } from "@/types";
+import { CheckType } from "@/utils/checkType";
 
-export type MapVal = string|number|boolean|Array<number>
+export type MapVal = string|number|boolean|undefined|Array<number>
 
 export type YWidget = Y.Map<MapVal>
 
@@ -35,7 +33,6 @@ export default class SynchronizeService<T>{
 
   ydoc;
   wsProvider;
-  clientId = nanoid();
   yWidget;
 
   constructor(serverUrl: string=`ws://localhost:1234`,
@@ -45,7 +42,7 @@ export default class SynchronizeService<T>{
       serverUrl, roomName, this.ydoc,
       {connect: false}
     )
-    this.wsProvider.connect()
+    // this.wsProvider.connect()
     this.yWidget = this.ydoc.getArray<Y.Map<MapVal>>('arr')
 
     this.yWidget.observeDeep(this._onDataUpdate.bind(this))

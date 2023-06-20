@@ -1,3 +1,5 @@
+import DesignService from "@/services/design.service";
+
 export interface Point {
   // 横坐标（组件渲染时的坐标）
   x: number;
@@ -10,7 +12,7 @@ export interface Widget extends Point {
   id: string;
   // 控件类型
   tag: string;
-  // 宽度，总宽度安置750来计算
+  // 宽度
   width: number;
   // 高度
   height: number;
@@ -35,9 +37,12 @@ export interface DesignWidget extends Widget{
   baseX: number;
   // 基础纵坐标
   baseY: number;
+  // 父节点
+  parent: string|undefined
 }
 
 export interface DesignPanelRef {
+  service: DesignService;
   createWidget(widget: Widget): void;
   getPageWidgets(): Array<DesignWidget>;
 }
