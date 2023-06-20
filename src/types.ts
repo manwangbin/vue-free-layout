@@ -37,6 +37,8 @@ export interface DesignWidget extends Widget{
   baseX: number;
   // 基础纵坐标
   baseY: number;
+  // 父节点
+  parent: string|undefined
 }
 
 export interface DesignPanelRef {

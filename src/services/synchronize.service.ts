@@ -1,11 +1,10 @@
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
-import { nanoid } from "nanoid";
 import { onBeforeUnmount } from "vue";
 import { DesignWidget } from "@/types";
 import { CheckType } from "@/utils/checkType";
 
-export type MapVal = string|number|boolean|Array<number>
+export type MapVal = string|number|boolean|undefined|Array<number>
 
 export type YWidget = Y.Map<MapVal>
 

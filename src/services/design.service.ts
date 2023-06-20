@@ -189,7 +189,8 @@ export default class DesignService {
 
         this.modal.newWidget = {
           ...this.selectedNewWidget, x: x, y: y, state: -1,
-          moveing: false, resizing: false, baseX: x, baseY: y
+          moveing: false, resizing: false, baseX: x, baseY: y,
+          parent: undefined
         }
         this.selectedNewOrgState = { ...this.modal.newWidget }
       }
@@ -222,6 +223,7 @@ export default class DesignService {
     if (this.modal.newWidget && this.inCanvase(event)) {
       const widget = {
         ...this.modal.newWidget,
+        parent: 'root',
       } as DesignWidget
       widget.state = 0
 
@@ -397,14 +399,5 @@ export default class DesignService {
       yWidget.set('y', (y + (y - nTop) * heightRatio) + (nTop - oTop))
     })
     this.recountPage()
-  }
-
-  // 获取Widget
-  getWidget(id: string){
-
-  }
-  // 设置Widget
-  setWidget(){
-
   }
 }

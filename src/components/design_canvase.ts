@@ -72,19 +72,6 @@ export default defineComponent({
       relayoutChildren()
     }
 
-    const selectedWidgetSizeChanageHandler = (size: any) => {
-      if (designService.modal.selecteds && designService.modal.selecteds.length > 0) {
-        if (designService.modal.selecteds.length === 1) {
-          designService.modal.selecteds[0].set('x', size.x)
-          designService.modal.selecteds[0].set('y', size.y)
-          designService.modal.selecteds[0].set('width', size.width)
-          designService.modal.selecteds[0].set('height', size.height)
-        } else {
-          // TODO
-        }
-      }
-    }
-
     const relayoutChildren = () => {
       // service.initWidgets(props.children)
       // emit('update:children', service.modal.placeWidgets)
@@ -210,7 +197,6 @@ export default defineComponent({
       return h(
         SizeBox,
         {
-          onSizeChanged: (event: any) => selectedWidgetSizeChanageHandler(event),
           onDragMoving: (widget: DesignWidget) => emit('drag-moving', widget),
           onDragStart: (widget: DesignWidget) => emit('drag-start', widget),
           onDragEnd: (widget: DesignWidget) => emit('drag-end', widget),
@@ -231,7 +217,7 @@ export default defineComponent({
             {
               class: 'alignment-line',
               style: {
-                display: line.show && option?.showAlign?'':'none',
+                // display: line.show && option?.showAlign?'':'none',
                 transform: `translate(${line.x}px, ${line.y}px)`,
                 borderLeft: line.direction===LineDirection.COLUMN?border:'',
                 borderTop: line.direction===LineDirection.ROW?border:'',

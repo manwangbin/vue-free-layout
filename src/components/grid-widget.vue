@@ -77,6 +77,9 @@ watch([
   ()=>widget.height
 ], ([width, height])=>{
   setGridGap(props.rowSpan, props.colSpan, width, height)
+  if(gridWidgets.value.length!==0){
+    resetGridWidgets()
+  }
 })
 
 const gridRowGap = ref([])
@@ -86,7 +89,6 @@ const gridWidgets = ref([])
 
 setGridGap(props.rowSpan, props.colSpan, widget.width, widget.height)
 function setGridGap(rowSpan, colSpan, width, height){
-  console.log('rowSpan, colSpan',rowSpan, colSpan);
   gridRowGap.value = []
   gridColGap.value = []
   gridItems.value = []
@@ -115,7 +117,6 @@ function setGridGap(rowSpan, colSpan, width, height){
       })
     }
   }
-  console.log('gridItems.value',gridItems.value);
 }
 
 service.emitter.on('onWidgetMove', onWidgetMove)
@@ -124,7 +125,7 @@ service.emitter.on('onMousedown', onMousedown)
 
 function onMousedown(setPoint){
   if(service.modal.selecteds.length===1&&service.modal.selecteds[0].get('id')===props.id){
-    gridWidgets.value.forEach(yWidget=>{
+    gridWidgets.value.forEach(({ yWidget })=>{
       const w = service.modal.selecteds.find(item=>item.get('id') === yWidget.get('id'))
       !w && service.addSelected(yWidget)
       setPoint(yWidget)
@@ -150,15 +151,22 @@ function onAddWidget(yWidget: Y.Map){
   const centerPoint = getCenterPoint(widget)
   if(pointInArea(centerPoint, widget)){
     // 判断在哪个格子中
-    gridItems.value.forEach(item=>{
+    gridItems.value.forEach(grid=>{
       const point = canvasP2GridP(centerPoint)
-      item.active = false
-      if(pointInArea(point, item)){
+      grid.active = false
+      if(pointInArea(point, grid)){
         // 将widget设置到这个格子中
-        setWidget(yWidget, item)
-        gridWidgets.value.push(yWidget)
-        // 删除这个Widget的边界线
-        service.alignLineService.delBoundaryLine(widget.id)
+        const {x, y} = gridP2CanvasP(grid)
+        yWidget.set('x', x)
+        yWidget.set('y', y)
+        yWidget.set('width', grid.width)
+        yWidget.set('height', grid.height)
+        yWidget.set('parent', widget.id)
+        gridWidgets.value.push({
+          yWidget,
+          row: grid.row,
+          col: grid.col
+        })
       }
     })
   }
@@ -170,13 +178,16 @@ onBeforeUnmount(()=>{
   service.emitter.off('onMousedown', onMousedown)
 })
 
-function setWidget(yWidget, grid){
-  const {x, y} = gridP2CanvasP(grid)
-  yWidget.set('x', x)
-  yWidget.set('y', y)
-  yWidget.set('width', grid.width)
-  yWidget.set('height', grid.height)
-  yWidget.set('parent', widget.id)
+function resetGridWidgets(){
+  gridWidgets.value.forEach(({yWidget, row, col})=>{
+    const grid = gridItems.value.find(item=>item.row===row && item.col===col)
+    if(grid){
+      const point = gridP2CanvasP(grid)
+      yWidget.set('x', point.x)
+      yWidget.set('y', point.y)
+      yWidget.set('width', grid.width)
+    }
+  })
 }
 
 function pointInArea(point, area){

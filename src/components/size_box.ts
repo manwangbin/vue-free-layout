@@ -85,6 +85,7 @@ export default defineComponent({
       if (changed) {
         for (let i = 0; i < designService.modal.selecteds.length; i++) {
           const widget = designService.modal.selecteds[i]
+          if(widget.get('parent')!=='root') continue
           const old = oldWidgetPosition.get(widget.get('id') as string)
           if (widget && old) {
             widget.set('x', old.x + newposition.x)
