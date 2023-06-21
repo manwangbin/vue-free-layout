@@ -1,12 +1,12 @@
 <template>
-  <div>
+  <div v-if="state">
     <div class="opt-title">{{state.label}}</div>
     <div class="opt-group">
       <div class="opt-title">字段布局</div>
       <div class="opt-content">
         <RadioButton v-model="state.direction"
                      :options="layoutOpt"
-                     @change="(opt)=>service.setDirection(props.id, opt.value)"></RadioButton>
+                     @change="(opt)=>state.setDirection(props.id, opt.value)"></RadioButton>
       </div>
     </div>
     <div class="opt-title">字体及方向</div>
@@ -22,7 +22,7 @@
       <div class="opt-content">
         <MultipleButton v-model="state.labelStyle.decorations"
                         :options="textStyle"
-                        @change="(_, selected)=>service.setFontStyle(props.id, 'labelStyle', selected)"></MultipleButton>
+                        @change="(_, selected)=>state.setFontStyle(props.id, 'labelStyle', selected)"></MultipleButton>
       </div>
     </div>
     <div class="opt-group">
@@ -37,7 +37,7 @@
       <div class="opt-content">
         <MultipleButton v-model="state.valueStyle.decorations"
                         :options="textStyle"
-                        @change="(_, selected)=>service.setFontStyle(props.id, 'valueStyle', selected)"></MultipleButton>
+                        @change="(_, selected)=>state.setFontStyle(props.id, 'valueStyle', selected)"></MultipleButton>
       </div>
     </div>
   </div>
@@ -48,27 +48,16 @@ import RadioButton from "../../components/RadioButton/index.vue";
 import MultipleButton from "../../components/MultipleButton/index.vue";
 import Input from "../../components/Input/index.vue";
 import Select from "../../components/Select/index.vue";
-import { getDefaultState, useTextField } from "./TextFieldService";
 import { fontFamily, fontSize, layoutOpt, textStyle } from "../utils/options";
-import { onMounted, ref, watch, watchEffect } from "vue";
+import { toRef } from "vue";
+import { useOptStateMap } from "../hooks";
+import { TextFieldService } from "./TextFieldService";
 
 const props = defineProps<{
   id: string
 }>()
 
-const service = useTextField()
-
-const state = ref(getDefaultState())
-
-onMounted(()=>{
-  state.value = service.getState(props.id)
-})
-
-watch(()=>props.id,()=>{
-  state.value = service.getState(props.id)
-},{
-  flush: 'post'
-})
+const state = useOptStateMap<TextFieldService>(toRef(props,'id'))
 
 </script>
 

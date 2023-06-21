@@ -4,17 +4,28 @@ export enum Direction{
   COLUMN='column'
 }
 
-export interface FieldInterface<S>{
+export interface FontStyle {
+  fontWeight: number,
+  fontStyle: string,
+  fontFamily: string,
+  fontSize: string,
+  textDecoration: string,
+  decorations: Array<'block'|'slanting'|'underline'>
+}
 
-  // 状态
-  stateMap: Map<string,S>
+export interface FieldInterface{
+  id: string
+  label: string
+  value: string
+  direction: Direction
+  style: {
+    flexDirection: Direction,
+    alignItems: string
+  }
+  labelStyle: FontStyle
+  valueStyle: FontStyle
 
-  initState: (id: string, defaultState: S) => S
+  setDirection(id: string, direction: Direction): void
 
-  getState: (id: string) => S | undefined
-
-  delState: (id: string) => void
-
-  // 设置标签对齐方式
-  setDirection: (id: string, direction: Direction) => void
+  setFontStyle(id: string, tag: 'labelStyle'|'valueStyle', selected: any[]): void
 }

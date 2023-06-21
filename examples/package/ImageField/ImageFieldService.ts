@@ -1,33 +1,5 @@
-import { FieldService } from "../utils/FieldService";
 import { Direction } from "../utils/FieldInterface";
-import { inject, InjectionKey, provide } from "vue";
 
-export interface ImageFieldState{
-  id: string,
-  src: string,
-  fit: 'fill'|'contain'|'cover'|'none'|'scale-down'
-  style: {
-    [key: string]: string
-  },
-  labelStyle: {
-    [key: string]: string
-  },
-  valueStyle: {
-    [key: string]: string
-  }
-}
-
-// https://resource.zhuyiyun.com/790241614973665283/nosvA9Fvk0jj7GlQj4g1S.png
-export function getDefaultState(): ImageFieldState{
-  return {
-    id: '',
-    src: '',
-    fit: 'cover',
-    style: {},
-    labelStyle: {},
-    valueStyle: {}
-  }
-}
 
 export const widgetOpt = {
   tag: 'ImageField',
@@ -41,36 +13,17 @@ export const widgetOpt = {
   padding: [0],
 }
 
-export const token: InjectionKey<ImageFieldService> = Symbol()
+export class ImageFieldService{
+  id: string
+  src = ''
+  fit = 'cover'
+  style = {}
+  labelStyle = {}
+  valueStyle = {}
 
-class ImageFieldService extends FieldService<ImageFieldState> {
-
-  constructor() {
-    super();
+  constructor(id: string) {
+    this.id = id
   }
 
-  setDirection(id: string, direction: Direction): void {
-    const state = this.getState(id)
-    if(!state) return
-    switch (direction) {
-      case Direction.COLUMN:
-        state.style.alignItems = 'start'
-        break
-      case Direction.ROW:
-        state.style.alignItems = 'center'
-        break
-    }
-    state.style.flexDirection = direction
-  }
-
+  setDirection(id: string, direction: Direction): void {}
 }
-
-
-export function defineImageField(){
-  provide(token, new ImageFieldService())
-}
-
-export function useImageField(){
-  return inject(token)!
-}
-

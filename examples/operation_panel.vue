@@ -36,7 +36,8 @@
                      @change="layoutChange"></RadioButton>
       </div>
     </div>
-    <component v-if="designModal.selecteds.length === 1" :is="Package[widget.tag+'Opt']" v-bind="widget"></component>
+    <component v-if="widget"
+               :is="Package[widget.tag+'Opt']" v-bind="widget"></component>
   </div>
 </template>
 
@@ -47,7 +48,6 @@ import RadioButton from "./components/RadioButton/index.vue";
 import { useDesignPanel } from "../src/hooks/useDesignPanel";
 import { computed, reactive } from "vue";
 import { pagePadding, layoutOpt, pageSize } from "./package/utils/options";
-import { useFields } from "./package/hooks";
 
 const {
   designModal,
@@ -62,11 +62,18 @@ const {
   setPadding
 } = useDesignPanel()
 
-const {
-  setDirection
-} = useFields()
+const selecteds = computed(()=>designModal.value.selecteds)
 
-const widget = computed(()=>designModal.value.selecteds[0].toJSON())
+const widget = computed(()=>{
+  const rootSelected = selecteds.value.filter(item=>item.get('parent'))
+  if(selecteds.value.length===1){
+    return selecteds.value[0].toJSON()
+  }else if(rootSelected.length > 1){
+    return rootSelected[0].toJSON()
+  }else{
+    return null
+  }
+})
 
 const model = reactive({
   pageSize: '841,1189',

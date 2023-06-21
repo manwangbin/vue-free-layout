@@ -217,7 +217,7 @@ export default defineComponent({
             {
               class: 'alignment-line',
               style: {
-                // display: line.show && option?.showAlign?'':'none',
+                display: line.show && option?.showAlign?'':'none',
                 transform: `translate(${line.x}px, ${line.y}px)`,
                 borderLeft: line.direction===LineDirection.COLUMN?border:'',
                 borderTop: line.direction===LineDirection.ROW?border:'',

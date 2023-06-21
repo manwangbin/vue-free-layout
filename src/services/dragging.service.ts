@@ -72,6 +72,17 @@ export default class DraggingService {
         this.emit('drag-moving', yWidget.toJSON())
       }
     }
+
+    const {bottom} = this.service.alignLineService?.getBoundaryByWidget(
+      this.service.modal.selecteds.map(yWidget=>yWidget.toJSON()) as Array<DesignWidget>)
+    let span = bottom - this.service.modal.pageRect.height+this.service.modal.pageRect.padding[2]
+    if(span>=0){
+      span = span>10?span:10
+      this.service.modal.pageRect.height += span
+      this.service.modal.pageRect.cheight += span
+      this.service.alignLineService?.setPaddingLine()
+    }
+
     if(this.service.modal.selecteds.length===1){
       this.service.emitter.emit('onWidgetMove', this.service.modal.selecteds[0].toJSON())
     }

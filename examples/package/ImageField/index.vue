@@ -31,18 +31,17 @@
 </template>
 
 <script setup lang="ts">
-import { getDefaultState, useImageField, widgetOpt } from "./ImageFieldService";
+import { ImageFieldService } from "./ImageFieldService";
 import { computed } from "vue";
 import { FileTransform } from "../utils/fileTransform";
+import { useStateMap } from "../hooks";
 
 const props = defineProps<{
   id: string,
   state: number
 }>()
 
-const service = useImageField()
-
-const state = service.initState(props.id, getDefaultState())
+const state = useStateMap<ImageFieldService>(props.id, new ImageFieldService(props.id))
 
 const style = computed(()=>state.style)
 

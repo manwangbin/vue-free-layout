@@ -143,7 +143,7 @@ export default defineComponent({
       [
         this.$slots.default && this.$slots.default(),
         this.renderCover(),
-        // this.renderOperationBar(),
+        // this.$props.value.parent,
         // this.$props.value.x, '-', this.$props.value.y, h('div'),
         // 'state    ', this.$props.value.state, h('div'),
         // 'index    ', this.$props.widgetIdx

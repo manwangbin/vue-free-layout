@@ -7,7 +7,6 @@ import OperationPanel from "./operation_panel.vue";
 import { DesignPanelRef, Widget } from '@/types'
 import { useDesignPanel } from "../src/hooks/useDesignPanel";
 import './style.less'
-import { defineFields } from "./package/hooks";
 
 export default defineComponent({
   name: 'ExamplePanel',
@@ -22,8 +21,6 @@ export default defineComponent({
     const {
       createWidget
     } = useDesignPanel(designPanel)
-
-    defineFields()
 
     return { designPanel, createWidget }
   },

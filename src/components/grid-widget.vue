@@ -58,9 +58,9 @@ const service = inject(DesignService.token) as DesignService
 
 // 获取当前widget的位置
 const widgets = service.modal.widgets
-let widget = widgets.find(item=>item.id===props.id)
-if(!widget){
-  widget = service.modal.newWidget
+let gridWidget = widgets.find(item=>item.id===props.id)
+if(!gridWidget){
+  gridWidget = service.modal.newWidget
 }
 
 // 监听行列变化
@@ -68,13 +68,13 @@ watch([
   ()=>props.rowSpan,
   ()=>props.colSpan
 ], ([rowSpan, colSpan])=>{
-  setGridGap(rowSpan, colSpan, widget.width, widget.height)
+  setGridGap(rowSpan, colSpan, gridWidget.width, gridWidget.height)
 })
 
 // 监听宽高变化
 watch([
-  ()=>widget.width,
-  ()=>widget.height
+  ()=>gridWidget.width,
+  ()=>gridWidget.height
 ], ([width, height])=>{
   setGridGap(props.rowSpan, props.colSpan, width, height)
   if(gridWidgets.value.length!==0){
@@ -87,7 +87,7 @@ const gridColGap = ref([])
 const gridItems = ref([])
 const gridWidgets = ref([])
 
-setGridGap(props.rowSpan, props.colSpan, widget.width, widget.height)
+setGridGap(props.rowSpan, props.colSpan, gridWidget.width, gridWidget.height)
 function setGridGap(rowSpan, colSpan, width, height){
   gridRowGap.value = []
   gridColGap.value = []
@@ -136,11 +136,15 @@ function onMousedown(setPoint){
 function onWidgetMove(widget: DesignWidget){
   if(widget.id === props.id) return
   const centerPoint = getCenterPoint(widget)
-  if(pointInArea(centerPoint, widget)){
+  if(pointInArea(centerPoint, gridWidget)){
     // 判断在哪个格子中
     gridItems.value.forEach(item=>{
       const point = canvasP2GridP(centerPoint)
       item.active = pointInArea(point, item);
+    })
+  }else{
+    gridItems.value.forEach(item=>{
+      item.active = false
     })
   }
 }
@@ -149,7 +153,7 @@ function onAddWidget(yWidget: Y.Map){
   const widget = yWidget.toJSON()
   if(widget.id === props.id) return
   const centerPoint = getCenterPoint(widget)
-  if(pointInArea(centerPoint, widget)){
+  if(pointInArea(centerPoint, gridWidget)){
     // 判断在哪个格子中
     gridItems.value.forEach(grid=>{
       const point = canvasP2GridP(centerPoint)
@@ -169,6 +173,13 @@ function onAddWidget(yWidget: Y.Map){
         })
       }
     })
+  }else{
+    // 移除从gridWidgets删除
+    const gridWidgetIdx = gridWidgets.value.findIndex(({yWidget})=>yWidget.get('id') === widget.id)
+    if(gridWidgetIdx!==-1){
+      gridWidgets.value[gridWidgetIdx].yWidget.set('parent', 'root')
+      gridWidgets.value.splice(gridWidgetIdx, 1)
+    }
   }
 }
 
@@ -198,14 +209,14 @@ function pointInArea(point, area){
 
 function canvasP2GridP(point){
   return{
-    x: point.x - widget.x,
-    y: point.y - widget.y
+    x: point.x - gridWidget.x,
+    y: point.y - gridWidget.y
   }
 }
 function gridP2CanvasP(point){
   return{
-    x: point.x + widget.x,
-    y: point.y + widget.y
+    x: point.x + gridWidget.x,
+    y: point.y + gridWidget.y
   }
 }
 function getCenterPoint(widget){

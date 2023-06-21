@@ -1,5 +1,5 @@
 <template>
-  <div class="opt-group">
+  <div v-if="state" class="opt-group">
     <div class="opt-title">网格大小</div>
     <div class="opt-content">
       <span>行</span>
@@ -12,26 +12,16 @@
 
 <script setup lang="ts">
 import Input from "../../components/Input/index.vue";
-import { onMounted, ref, watch } from "vue";
-import { getDefaultState, useGridLayout } from "./GridLayoutService";
+import { toRef } from "vue";
+import { GridLayoutService } from "./GridLayoutService";
+import { useOptStateMap } from "../hooks";
 
 const props = defineProps<{
   id: string
 }>()
 
-const service = useGridLayout()
+const state = useOptStateMap<GridLayoutService>(toRef(props,'id'))
 
-const state = ref(getDefaultState())
-
-onMounted(()=>{
-  state.value = service.getState(props.id)
-})
-
-watch(()=>props.id,()=>{
-  state.value = service.getState(props.id)
-},{
-  flush: 'post'
-})
 </script>
 
 <script lang="ts">

@@ -6,16 +6,15 @@
 
 <script setup lang="ts">
 import GridWidget from "@/components/grid-widget.vue";
-import { getDefaultState, useGridLayout } from "./GridLayoutService";
+import { GridLayoutService } from "./GridLayoutService";
+import { useStateMap } from "../hooks";
 
 const props = defineProps<{
   id: string,
   state: number
 }>()
 
-const service = useGridLayout()
-
-const state = service.initState(props.id, getDefaultState())
+const state = useStateMap<GridLayoutService>(props.id, new GridLayoutService(props.id))
 
 </script>
 

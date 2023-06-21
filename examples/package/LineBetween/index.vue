@@ -10,16 +10,15 @@
 </template>
 
 <script setup lang="ts">
-import { getDefaultState, useLineBetween } from "./LineBetweenService";
+import { useStateMap } from "../hooks";
+import { LineBetweenService } from "./LineBetweenService";
 
 const props = defineProps<{
   id: string,
   state: number
 }>()
 
-const service = useLineBetween()
-
-const state = service.initState(props.id, getDefaultState())
+const state = useStateMap<LineBetweenService>(props.id, new LineBetweenService(props.id))
 
 </script>
 

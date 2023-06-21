@@ -30,11 +30,11 @@ export default defineComponent({
       orgPosition = { ...position.value }
       oldWidgetPosition.clear()
       for (let i = 0; i < designService.modal.selecteds.length; i++) {
-        const widget = designService.modal.selecteds[i]
-        oldWidgetPosition.set(<string>widget.get('id'),
-          { x: <number>widget.get('x'), y: <number>widget.get('y'),
-            width: <number>widget.get('width'), height: <number>widget.get('height') })
-        emit('reszie-start', widget.toJSON())
+        const yWidget = designService.modal.selecteds[i]
+        oldWidgetPosition.set(<string>yWidget.get('id'),
+          { x: <number>yWidget.get('x'), y: <number>yWidget.get('y'),
+            width: <number>yWidget.get('width'), height: <number>yWidget.get('height') })
+        emit('reszie-start', yWidget.toJSON())
       }
     }
 

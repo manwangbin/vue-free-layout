@@ -1,55 +1,30 @@
-import { inject } from "vue";
-import { Direction } from "./utils/FieldInterface";
-import {
-  defineTextField,
-  token as TextFieldToken
-} from "./TextField/TextFieldService";
-import {
-  definePlainTextField,
-  token as PlainTextFieldToken
-} from "./PlainTextField/PlainTextFieldService";
-import {
-  defineImageField,
-  token as ImageFieldToken
-} from "./ImageField/ImageFieldService";
-import {
-  defineLineBetween,
-  token as LineBetweenToken
-} from "./LineBetween/LineBetweenService";
-import {
-  defineRadioField,
-  token as RadioToken
-} from "./RadioField/RadioFieldService";
-import {
-  defineGridLayout,
-  token as GridLayoutToken
-} from "./GridLayout/GridLayoutService";
+import { onBeforeUnmount, onMounted, reactive, ref, Ref, watch } from "vue";
 
 
-export function defineFields(){
-  defineTextField()
-  definePlainTextField()
-  defineImageField()
-  defineLineBetween()
-  defineRadioField()
-  defineGridLayout()
+const stateMap = new Map<string, any>()
+
+export function useStateMap<S extends object>(id: string, fileObj: S){
+  const state = reactive(fileObj)
+
+  onMounted(()=>{
+    stateMap.set(id, state)
+  })
+  onBeforeUnmount(()=>stateMap.delete(id))
+  return state as S
 }
 
+export function useOptStateMap<S>(id: Ref<string>){
+  const state: Ref<S|undefined> = ref()
 
-export function useFields(){
-  const serviceSet = new Set([
-    inject(TextFieldToken),
-    inject(RadioToken),
-  ])
-  function setDirection(id: string, direction: Direction){
-    serviceSet.forEach(service=>{
-      if(service){
-        service.setDirection(id, direction)
-      }
-    })
-  }
+  onMounted(()=>{
+    state.value = stateMap.get(id.value)
+  })
 
-  return{
-    setDirection
-  }
+  watch(id,()=>{
+    state.value = stateMap.get(id.value)
+  },{
+    flush: 'post'
+  })
+
+  return state
 }

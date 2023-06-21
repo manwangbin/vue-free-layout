@@ -1,22 +1,6 @@
-import { inject, InjectionKey, provide } from "vue";
 import { Direction } from "../utils/FieldInterface";
 import { FieldService } from "../utils/FieldService";
 
-export interface LineBetweenState{
-  id: string,
-  borderSize: number,
-  borderStyle: string,
-  borderColor: string
-}
-
-export function getDefaultState(): LineBetweenState{
-  return {
-    id: '',
-    borderSize: 1,
-    borderStyle: 'solid',
-    borderColor: '#c9c9c9'
-  }
-}
 
 export const widgetOpt = {
   tag: 'LineBetween',
@@ -30,23 +14,13 @@ export const widgetOpt = {
   padding: [0],
 }
 
-export const token: InjectionKey<LineBetweenService> = Symbol()
 
-class LineBetweenService extends FieldService<LineBetweenState>{
-
-  constructor() {
-    super();
+export class LineBetweenService{
+  id: string
+  borderSize = 1
+  borderStyle = 'solid'
+  borderColor = '#c9c9c9'
+  constructor(id: string) {
+    this.id = id
   }
-
-  setDirection(id: string, direction: Direction): void {
-  }
-
-}
-
-export function defineLineBetween(){
-  provide(token, new LineBetweenService())
-}
-
-export function useLineBetween(){
-  return inject(token)!
 }

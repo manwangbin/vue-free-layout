@@ -16,17 +16,16 @@
 </template>
 
 <script setup lang="ts">
-import { getDefaultState, useTextField } from "./TextFieldService";
-import { computed } from "vue";
+import { TextFieldService } from "./TextFieldService";
+import { computed, provide } from "vue";
+import { useStateMap } from "../hooks";
 
 const props = defineProps<{
   id: string,
   state: number
 }>()
 
-const service = useTextField()
-
-const state = service.initState(props.id, getDefaultState())
+const state = useStateMap<TextFieldService>(props.id, new TextFieldService(props.id))
 
 const style = computed(()=>state.style)
 

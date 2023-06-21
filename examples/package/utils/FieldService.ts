@@ -1,34 +1,63 @@
 import { Direction, FieldInterface } from "./FieldInterface";
-import { onBeforeUnmount, onMounted, reactive, ref, Ref, watch } from "vue";
+import { FontStyle } from "../TextField/TextFieldService";
 
 
-export abstract class FieldService<S extends object> implements FieldInterface<S>{
-
-  stateMap = new Map<string, S>()
-
-  protected constructor() {
+export abstract class FieldService implements FieldInterface{
+  abstract id: string;
+  abstract label: string;
+  abstract value: string;
+  direction = Direction.COLUMN;
+  style = {
+    flexDirection: Direction.COLUMN,
+    alignItems: 'start'
+  }
+  labelStyle = {
+    fontWeight: 400,
+    fontStyle: '',
+    fontFamily: 'KaiTi',
+    fontSize: '14px',
+    textDecoration: '',
+    decorations: []
+  }
+  valueStyle = {
+    fontWeight: 400,
+    fontStyle: '',
+    fontFamily: 'KaiTi',
+    fontSize: '18px',
+    textDecoration: '',
+    decorations: []
   }
 
-  initState(id: string, defaultState: S): S{
-    const state = reactive({
-      ...defaultState,
-      id: id
-    }) as S
+  setDirection(id: string, direction: Direction): void{
+    switch (direction) {
+      case Direction.COLUMN:
+        this.style.alignItems = 'start'
+        break
+      case Direction.ROW:
+        this.style.alignItems = 'center'
+        break
+    }
+    this.style.flexDirection = direction
+  }
 
-    onMounted(()=>{
-      this.stateMap.set(id, state)
+  setFontStyle(id: string, tag: "labelStyle" | "valueStyle", selected: any[]): void{
+    let style: FontStyle = {
+      fontWeight: 400,
+      fontStyle: '',
+      textDecoration: ''
+    }
+    selected.forEach(item=>{
+      style = {
+        ...style,
+        ...item.style
+      }
     })
-    onBeforeUnmount(()=>this.delState(id))
-    return state
+    this[tag] = {
+      ...this[tag],
+      fontWeight: style.fontWeight,
+      fontStyle: style.fontStyle,
+      textDecoration: style.textDecoration
+    }
   }
 
-  getState(id: string){
-    return this.stateMap.get(id)
-  }
-
-  delState(id: string){
-    this.stateMap.delete(id)
-  }
-
-  abstract setDirection(id: string, direction: Direction): void
 }

@@ -125,7 +125,7 @@ export default class DesignService {
           moveing: false,
           resizing: false,
           baseX: item.x,
-          baseY: item.y
+          baseY: item.y,
         }
       ))
       this.syncService.yWidget.push(w)
@@ -190,7 +190,7 @@ export default class DesignService {
         this.modal.newWidget = {
           ...this.selectedNewWidget, x: x, y: y, state: -1,
           moveing: false, resizing: false, baseX: x, baseY: y,
-          parent: undefined
+          parent: 'root'
         }
         this.selectedNewOrgState = { ...this.modal.newWidget }
       }
@@ -210,7 +210,13 @@ export default class DesignService {
         x, y
       }
       this.alignLineService?.onNewWidgetMove([widget], this)
-
+      let span = widget.y+widget.height - this.modal.pageRect.height+this.modal.pageRect.padding[2]
+      if(span>=0){
+        span = span>10?span:10
+        this.modal.pageRect.height += span
+        this.modal.pageRect.cheight += span
+        this.alignLineService?.setPaddingLine()
+      }
       this.emitter.emit('onWidgetMove', widget)
 
       this.emit("drag-moving", this.modal.newWidget)
@@ -223,7 +229,6 @@ export default class DesignService {
     if (this.modal.newWidget && this.inCanvase(event)) {
       const widget = {
         ...this.modal.newWidget,
-        parent: 'root',
       } as DesignWidget
       widget.state = 0
 
