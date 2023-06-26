@@ -9,6 +9,7 @@ export const widgetOpt = {
   height: 300,
   margin: [0],
   padding: [0],
+  allowOverlap: true
 }
 
 export class GridLayoutService {

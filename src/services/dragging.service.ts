@@ -1,10 +1,11 @@
-import { DesignWidget, Point } from '../types'
+import { DesignWidget, Point } from "../types";
 import { reactive } from 'vue'
 import DesignService from './design.service'
 import { YWidget } from "@/services/synchronize.service";
 
 interface Modal {
   beginDragging: boolean;
+  isOverlap: boolean
 }
 
 export default class DraggingService {
@@ -12,9 +13,12 @@ export default class DraggingService {
   dragStartPosition: Point;
   orgPosition = new Map<string, Point>()
 
+  copyWidgets: DesignWidget[] = []
+
   constructor (public service: DesignService, public emit: (event: 'drag-start' | 'drag-moving' | 'drag-end', ...args: any[]) => void) {
     this.modal = reactive({
-      beginDragging: false
+      beginDragging: false,
+      isOverlap: false,
     })
     this.dragStartPosition = { x: -1, y: -1 }
   }
@@ -46,6 +50,8 @@ export default class DraggingService {
     this.service.emitter.emit('onMousedown', (yWidget: YWidget)=>{
       this.orgPosition.set(yWidget.get('id') as string, { x: yWidget.get('x'), y: yWidget.get('y') } as Point)
     })
+    // 记录最后的位置
+    this.copyWidgets = this.service.modal.selecteds.map(item=>item.toJSON()) as DesignWidget[]
   }
 
   dragHandler = (event: MouseEvent) => {
@@ -73,21 +79,32 @@ export default class DraggingService {
       }
     }
 
-    const {bottom} = this.service.alignLineService?.getBoundaryByWidget(
-      this.service.modal.selecteds.map(yWidget=>yWidget.toJSON()) as Array<DesignWidget>)
-    let span = bottom - this.service.modal.pageRect.height+this.service.modal.pageRect.padding[2]
-    if(span>=0){
-      span = span>10?span:10
-      this.service.modal.pageRect.height += span
-      this.service.modal.pageRect.cheight += span
-      this.service.alignLineService?.setPaddingLine()
+    // 判断是否重叠
+    const widgets = this.service.modal.selecteds.map(item=>item.toJSON()) as DesignWidget[]
+    if(!this.service.utils.isNotOverlap(widgets)){
+      this.service.modal.selecteds.forEach(yWidget=>{
+        yWidget.set('isOverlap', true)
+      })
+      this.modal.isOverlap = true
+    }else{
+      this.service.modal.selecteds.forEach(yWidget=>{
+        yWidget.set('isOverlap', false)
+      })
+      this.modal.isOverlap = false
     }
+
+    this.service.alignLineService?.onWidgetGroupMove(this.service.modal.selecteds)
+
+    const {bottom} = this.service.utils.getBoundaryByWidget(
+      this.service.modal.selecteds.map(yWidget=>yWidget.toJSON()) as Array<DesignWidget>)
+
+    this.service.utils.autoHeight(bottom)
 
     if(this.service.modal.selecteds.length===1){
       this.service.emitter.emit('onWidgetMove', this.service.modal.selecteds[0].toJSON())
     }
-    this.service.alignLineService?.onWidgetGroupMove(this.service.modal.selecteds)
   }
+
 
   dragEndHandler = (event: MouseEvent) => {
     event.preventDefault()
@@ -96,16 +113,30 @@ export default class DraggingService {
     window.removeEventListener('mouseup', this.dragEndHandler, true)
 
     this.modal.beginDragging = false
+
     for (let i = 0; i < this.service.modal.selecteds.length; i++) {
       const yWidget = this.service.modal.selecteds[i]
       yWidget.set('moveing', false)
       yWidget.set('state', 1)
+
+      if(this.modal.isOverlap){
+        const copyWidget = this.copyWidgets[i]
+        yWidget.set('x', copyWidget.x)
+        yWidget.set('y', copyWidget.y)
+        yWidget.set('baseX', copyWidget.baseX)
+        yWidget.set('baseY', copyWidget.baseY)
+        yWidget.set('parent', copyWidget.parent)
+        yWidget.set('isOverlap', false)
+      }
       this.emit('drag-end', yWidget.toJSON())
     }
+
+    this.modal.isOverlap = false
 
     if(this.service.modal.selecteds.length===1){
       this.service.emitter.emit('onAddWidget', this.service.modal.selecteds[0])
     }
     this.orgPosition.clear()
   }
+
 }

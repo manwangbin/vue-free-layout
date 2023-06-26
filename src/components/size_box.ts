@@ -126,6 +126,7 @@ export default defineComponent({
     const vheight = computed(() => position.value.height > 8 ? position.value.height - 8 : 0)
 
     const renderBorders = () => {
+      if(designService.modal.selecteds.find(widget =>widget.get('moveing'))) return
       return [
         // top
         h(
@@ -135,7 +136,7 @@ export default defineComponent({
             style: {
               left: hx.value + 'px',
               top: htop.value + 'px',
-              width: hwidth.value + 'px'
+              width: hwidth.value + 'px',
             },
             onmousedown: (event:MouseEvent) => onMouseDown(['n', 't'], event)
           },
@@ -156,7 +157,7 @@ export default defineComponent({
             style: {
               left: vright.value + 'px',
               top: vtop.value + 'px',
-              height: vheight.value + 'px'
+              height: vheight.value + 'px',
             },
             onmousedown: (event:MouseEvent) => onMouseDown(['r', 'n'], event)
           },
@@ -177,7 +178,7 @@ export default defineComponent({
             style: {
               left: hx.value + 'px',
               top: hbottom.value + 'px',
-              width: hwidth.value + 'px'
+              width: hwidth.value + 'px',
             },
             onmousedown: (event:MouseEvent) => onMouseDown(['n', 'b'], event)
           },
@@ -198,7 +199,7 @@ export default defineComponent({
             style: {
               left: vleft.value + 'px',
               top: vtop.value + 'px',
-              height: vheight.value + 'px'
+              height: vheight.value + 'px',
             },
             onmousedown: (event:MouseEvent) => onMouseDown(['l', 'n'], event)
           },
@@ -221,6 +222,7 @@ export default defineComponent({
     const conRTX = computed(() => conLTX.value + position.value.width)
     const conRBX = computed(() => conLTY.value + position.value.height)
     const drawConerBox = () => {
+      if(designService.modal.selecteds.find(widget =>widget.get('moveing'))) return
       return [
         // left top
         h(
@@ -229,7 +231,7 @@ export default defineComponent({
             class: 'size-border-corn nwse-resize',
             style: {
               left: conLTX.value + 'px',
-              top: conLTY.value + 'px'
+              top: conLTY.value + 'px',
             },
             onmousedown: (event:MouseEvent) => onMouseDown(['l', 't'], event)
           },
@@ -250,7 +252,7 @@ export default defineComponent({
             class: 'size-border-corn nesw-resize',
             style: {
               left: conRTX.value + 'px',
-              top: conLTY.value + 'px'
+              top: conLTY.value + 'px',
             },
             onmousedown: (event:MouseEvent) => onMouseDown(['r', 't'], event)
           },
@@ -271,7 +273,7 @@ export default defineComponent({
             class: 'size-border-corn nwse-resize',
             style: {
               left: conRTX.value + 'px',
-              top: conRBX.value + 'px'
+              top: conRBX.value + 'px',
             },
             onmousedown: (event:MouseEvent) => onMouseDown(['r', 'b'], event)
           },
@@ -292,7 +294,7 @@ export default defineComponent({
             class: 'size-border-corn nesw-resize',
             style: {
               left: conLTX.value + 'px',
-              top: conRBX.value + 'px'
+              top: conRBX.value + 'px',
             },
             onmousedown: (event:MouseEvent) => onMouseDown(['l', 'b'], event)
           },
@@ -318,10 +320,15 @@ export default defineComponent({
               left: (position.value.x) + 'px',
               top: (position.value.y) + 'px',
               width: position.value.width + 'px',
-              height: position.value.height + 'px'
+              height: position.value.height + 'px',
+              background: service.modal.isOverlap?'rgba(242,5,6,0.7)':'',
+              zIndex: 1500
             },
             onmousedown: (event:MouseEvent) => service.mousedownHandler(event, undefined)
-          }
+          },
+          [
+            h('div', {}, service.modal.isOverlap)
+          ]
         )
       }
     }
@@ -334,8 +341,8 @@ export default defineComponent({
       'div',
       {},
       [
-        ...this.renderBorders(),
-        ...this.drawConerBox(),
+        ...this.renderBorders() || '',
+        ...this.drawConerBox() || '',
         this.renderCover()
       ])
   }

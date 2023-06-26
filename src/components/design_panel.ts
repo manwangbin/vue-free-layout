@@ -25,7 +25,8 @@ export default defineComponent({
 
     height: {
       type: Number,
-      required: true
+      required: true,
+      default: 500
     },
 
     unit: {
@@ -147,7 +148,7 @@ export default defineComponent({
       if (designBody.value) {
         getClientRect(designBody.value).then(value => {
           service.modal.canvaseRect = value
-          service.recountPage()
+          service.utils.recountPage()
           nextTick().then(()=>{
             service.emitter.emit('onLayout')
           })
@@ -187,7 +188,8 @@ export default defineComponent({
             rulerColorDark: props.rulerColorDark,
             style: {
               left: (service.modal.canvaseRect.x - service.modal.rect.x) + 'px',
-              top: (service.modal.canvaseRect.y - service.modal.rect.y) + 'px'
+              top: (service.modal.canvaseRect.y - service.modal.rect.y) + 'px',
+              zIndex: 2000
             }
           }
         )
@@ -211,7 +213,8 @@ export default defineComponent({
             h: false,
             style: {
               left: (service.modal.canvaseRect.x - service.modal.rect.x) + 'px',
-              top: (service.modal.canvaseRect.y - service.modal.rect.y) + 'px'
+              top: (service.modal.canvaseRect.y - service.modal.rect.y) + 'px',
+              zIndex: 2000
             }
           }
         )

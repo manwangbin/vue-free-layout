@@ -1,5 +1,5 @@
 import { reactive } from "vue";
-import { DesignWidget } from "@/types";
+import { Boundary, DesignWidget } from "@/types";
 import DesignService from "@/services/design.service";
 import { UpdateData, YWidget } from "@/services/synchronize.service";
 import { CheckType } from "@/utils/checkType";
@@ -17,12 +17,6 @@ export enum DistanceEnum {
   REMOTE
 }
 
-interface Boundary{
-  top: number,
-  bottom: number,
-  left: number,
-  right: number
-}
 
 interface Line {
   id: string
@@ -102,7 +96,7 @@ export default class AlignmentLineService {
   // 监听newWidget移动的
   onNewWidgetMove(widgets: Array<DesignWidget>, designService: DesignService){
     if(!widgets.length) return
-    const boundary = this.getBoundaryByWidget(widgets)
+    const boundary = this.designService.utils.getBoundaryByWidget(widgets)
     this.handlerWidgetMove(boundary, this.adsorbNewWidge.bind(this, designService))
   }
 
@@ -110,7 +104,7 @@ export default class AlignmentLineService {
   onWidgetGroupMove(yWidgets: Array<YWidget>){
     if(!yWidgets.length) return
     const widgets = yWidgets.map(item=>item.toJSON()) as DesignWidget[]
-    const boundary = this.getBoundaryByWidget(widgets)
+    const boundary = this.designService.utils.getBoundaryByWidget(widgets)
     this.handlerWidgetMove(boundary, this.adsorbWidgets.bind(this, yWidgets))
   }
 
@@ -196,7 +190,7 @@ export default class AlignmentLineService {
   // 吸附新创建的widget
   adsorbNewWidge(designService: DesignService, place: string, line: BoundaryLine){
     if(!designService.modal.newWidget) return
-    const {x, y} = designService.cavnaseP2NewWidgetP(line)
+    const {x, y} = designService.utils.cavnaseP2NewWidgetP(line)
     switch (place){
       case 'top':
         designService.modal.newWidget.y = y
@@ -253,7 +247,7 @@ export default class AlignmentLineService {
   // 监听选中区域边界的移动
   onBoundaryMove(selecteds: Array<YWidget>, direct: string[]){
     const widgets = selecteds.map(item=>item.toJSON()) as DesignWidget[]
-    const boundary = this.getBoundaryByWidget(widgets)
+    const boundary = this.designService.utils.getBoundaryByWidget(widgets)
 
     let minTop: any = null
     let minBottom: any = null
@@ -374,30 +368,6 @@ export default class AlignmentLineService {
     }
   }
 
-  // 计算多个widget构成的边界
-  getBoundaryByWidget(widgets: Array<DesignWidget>): Boundary{
-    const tList: number[] = []
-    const bList: number[] = []
-    const lList: number[] = []
-    const rList: number[] = []
-    widgets.forEach(widget=>{
-      const {
-        top, bottom,
-        left, right
-      } = this.widget2Boundary(widget)
-      tList.push(top)
-      bList.push(bottom)
-      lList.push(left)
-      rList.push(right)
-    })
-    const top = Math.min.apply(null, tList)
-    const bottom = Math.max.apply(null, bList)
-    const left = Math.min.apply(null, lList)
-    const right = Math.max.apply(null, rList)
-    return {
-      top, bottom, left, right
-    }
-  }
 
   // 获取Widget离某条线的距离，1：达到吸附距离，2：达到显示距离，3：距离较远
   getDistance(span: number, line: number): {distance: number, tag: DistanceEnum}{
@@ -408,16 +378,6 @@ export default class AlignmentLineService {
     return {
       distance,
       tag
-    }
-  }
-
-  // 获取widget的边界
-  widget2Boundary(widget: DesignWidget){
-    return {
-      left: widget.x,
-      right: widget.x + widget.width,
-      top: widget.y,
-      bottom: widget.y + widget.height
     }
   }
 
@@ -521,14 +481,14 @@ export default class AlignmentLineService {
   // 左对齐
   leftJustify(){
     const widgets = this.designService.modal.selecteds.map(item=>item.toJSON()) as DesignWidget[]
-    const {left} = this.getBoundaryByWidget(widgets)
+    const {left} = this.designService.utils.getBoundaryByWidget(widgets)
     this.designService.modal.selecteds.forEach(yWidgets=>yWidgets.set('x', left))
   }
 
   // 右对齐
   rightJustify(){
     const widgets = this.designService.modal.selecteds.map(item=>item.toJSON()) as DesignWidget[]
-    const {right} = this.getBoundaryByWidget(widgets)
+    const {right} = this.designService.utils.getBoundaryByWidget(widgets)
     this.designService.modal.selecteds.forEach(yWidgets=>{
       const width = yWidgets.get('width') as number
       yWidgets.set('x', right - width)
@@ -538,14 +498,14 @@ export default class AlignmentLineService {
   // 上对齐
   topJustify(){
     const widgets = this.designService.modal.selecteds.map(item=>item.toJSON()) as DesignWidget[]
-    const {top} = this.getBoundaryByWidget(widgets)
+    const {top} = this.designService.utils.getBoundaryByWidget(widgets)
     this.designService.modal.selecteds.forEach(yWidgets=>yWidgets.set('y', top))
   }
 
   // 下对齐
   bottomJustify(){
     const widgets = this.designService.modal.selecteds.map(item=>item.toJSON()) as DesignWidget[]
-    const {bottom} = this.getBoundaryByWidget(widgets)
+    const {bottom} = this.designService.utils.getBoundaryByWidget(widgets)
     this.designService.modal.selecteds.forEach(yWidgets=>{
       const height = yWidgets.get('height') as number
       yWidgets.set('y', bottom - height)
@@ -555,7 +515,7 @@ export default class AlignmentLineService {
   // 横向两端对齐
   rowBetween(){
     const widgets = this.designService.modal.selecteds.map(item=>item.toJSON()) as DesignWidget[]
-    const {left, right} = this.getBoundaryByWidget(widgets)
+    const {left, right} = this.designService.utils.getBoundaryByWidget(widgets)
     // 计算所有widget的宽度
     const widgetsWidth = widgets.reduce((total, widget)=>total + widget.width, 0)
     const boundaryWidth = right - left
@@ -577,7 +537,7 @@ export default class AlignmentLineService {
   // 纵向两端对齐
   columnBetween(){
     const widgets = this.designService.modal.selecteds.map(item=>item.toJSON()) as DesignWidget[]
-    const {top, bottom} = this.getBoundaryByWidget(widgets)
+    const {top, bottom} = this.designService.utils.getBoundaryByWidget(widgets)
     // 计算所有widget的宽度
     const widgetsHeight = widgets.reduce((total, widget)=>total + widget.height, 0)
     const boundaryHeight = bottom - top

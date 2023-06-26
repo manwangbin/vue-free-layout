@@ -1,9 +1,10 @@
-import { DesignWidget, Point, Widget } from '../types'
+import { Boundary, DesignWidget, Point, Widget } from "../types";
 import { computed } from '@vue/reactivity'
 import { ComputedRef, InjectionKey, nextTick, provide, reactive, ref, Ref, watch } from "vue";
 import AlignmentLineService, { BoundaryLine } from "@/services/alignmentLine.service";
 import SynchronizeService, { YWidget } from "@/services/synchronize.service";
 import mitt from 'mitt'
+import UtilsService from "@/services/utils.service";
 
 export interface Modal {
   newWidget?: DesignWidget;
@@ -42,7 +43,9 @@ export default class DesignService {
 
   modal: Modal;
 
-  boundaryLine: ComputedRef<Array<BoundaryLine>>;
+  utils: UtilsService
+
+  boundaryLine = computed(()=>this.alignLineService?.boundaryLine||[])
 
   syncService: SynchronizeService<DesignWidget>;
 
@@ -81,14 +84,15 @@ export default class DesignService {
     }
   })
 
-  emitter = mitt()
+  emitter = mitt<Record<string, any>>()
 
   constructor (props: any,
-               public emit: (event:'page-resized' | 'drag-moving' | 'drag-end', ...args: any)=>void) {
+               public emit: (event:'page-resized' | 'drag-start' | 'drag-moving' | 'drag-end', ...args: any)=>void) {
     provide(DesignService.token, this)
 
     this.syncService = new SynchronizeService()
     this.alignLineService = new AlignmentLineService(props, this)
+    this.utils = new UtilsService(this)
 
     let {value: widgets,width, height}: {
       value: DesignWidget[],
@@ -96,27 +100,21 @@ export default class DesignService {
       height: number
     } = props
 
-    if (height === 0) {
-      height = 500
-    }
-
-    this.boundaryLine = computed(()=>this.alignLineService?.boundaryLine||[])
-
     this.modal = reactive({
       scale: 1,
-
       rect: { x: 0, y: 0, width: 0, height: 0 },
       canvaseRect: { x: 0, y: 0, width: 0, height: 0 },
-      pageRect: { x: 0, y: 0, width: width, height: height, cwidth: 0, cheight: 0, padding: [0,0,0,0] },
-
+      pageRect: {
+        x: 0, y: 0, width: width, height: height, cwidth: 0, cheight: 0,
+        padding: this.utils.paddingFormat(props.pagePadding)
+      },
       scrollLeft: 0,
       scrollTop: 0,
-
       moveing: false,
       selecteds: [],
       widgets: [],
     })
-    this.setPadding(props.pagePadding)
+
     if (widgets) {
       let w = widgets.map(item =>
         this.syncService.createWidget({
@@ -153,20 +151,6 @@ export default class DesignService {
     })
   }
 
-  setPadding(padding: number[]){
-    if(padding.length===1){
-      this.modal.pageRect.padding = [padding[0],padding[0],padding[0],padding[0]]
-    }else if(padding.length===2){
-      this.modal.pageRect.padding = [padding[0],padding[1],padding[0],padding[1]]
-    }else if(padding.length===3){
-      this.modal.pageRect.padding = [padding[0],padding[1],padding[1],padding[2]]
-    }else if(padding.length===4){
-      this.modal.pageRect.padding = padding as [number,number,number,number]
-    }
-
-
-  }
-
   createWidgetHandler (widget: Widget) {
     this.selectedNewWidget = widget
     window.addEventListener('mousemove', this.newWidgetDragingRegistHandler, true)
@@ -178,19 +162,14 @@ export default class DesignService {
       if (this.selectedNewWidget) {
         this.selectedMousePoint = { x: event.clientX, y: event.clientY }
         let x = event.clientX - this.selectedNewWidget.width / 2 - this.modal.rect.x
-        if (x < 0) {
-          x = 0
-        }
 
         let y = event.clientY - this.selectedNewWidget.height / 2 - this.modal.rect.y
-        if (y < 0) {
-          y = 0
-        }
 
         this.modal.newWidget = {
           ...this.selectedNewWidget, x: x, y: y, state: -1,
           moveing: false, resizing: false, baseX: x, baseY: y,
-          parent: 'root'
+          parent: 'root',
+          isOverlap: false
         }
         this.selectedNewOrgState = { ...this.modal.newWidget }
       }
@@ -203,20 +182,19 @@ export default class DesignService {
       this.modal.newWidget.baseX = this.selectedNewOrgState.x + hspan
       this.modal.newWidget.baseY = this.selectedNewOrgState.y + vspan
 
-      const {x, y} = this.newWidgetP2CavnaseP(this.modal.newWidget)
+      const {x, y} = this.utils.newWidgetP2CavnaseP(this.modal.newWidget)
 
       const widget = {
         ...this.modal.newWidget,
         x, y
       }
+
       this.alignLineService?.onNewWidgetMove([widget], this)
-      let span = widget.y+widget.height - this.modal.pageRect.height+this.modal.pageRect.padding[2]
-      if(span>=0){
-        span = span>10?span:10
-        this.modal.pageRect.height += span
-        this.modal.pageRect.cheight += span
-        this.alignLineService?.setPaddingLine()
-      }
+      // 判断是否重叠
+      this.modal.newWidget.isOverlap = !this.utils.isNotOverlap([widget]);
+
+      this.utils.autoHeight(widget.y+widget.height)
+
       this.emitter.emit('onWidgetMove', widget)
 
       this.emit("drag-moving", this.modal.newWidget)
@@ -226,13 +204,13 @@ export default class DesignService {
   newWidgetDropRegistHandler = (event: MouseEvent) => {
     window.removeEventListener('mousemove', this.newWidgetDragingRegistHandler, true)
     window.removeEventListener('mouseup', this.newWidgetDropRegistHandler, true)
-    if (this.modal.newWidget && this.inCanvase(event)) {
+    if (this.modal.newWidget && !this.modal.newWidget.isOverlap) {
       const widget = {
         ...this.modal.newWidget,
       } as DesignWidget
       widget.state = 0
 
-      const { x, y } =this.newWidgetP2CavnaseP(widget)
+      const { x, y } =this.utils.newWidgetP2CavnaseP(widget)
 
       widget.x = x
       widget.y = y
@@ -258,34 +236,11 @@ export default class DesignService {
     this.alignLineService?.delBoundaryLine(widget.id)
   }
 
-  /**
-   * 重新计算页面布局
-   */
-  recountPage () {
-    const viewWidth = this.modal.pageRect.width * this.modal.scale + DesignService.SPAN * 2
-    if (viewWidth < this.modal.canvaseRect.width) {
-      this.modal.pageRect.cwidth = this.modal.canvaseRect.width / this.modal.scale
-    } else {
-      this.modal.pageRect.cwidth = viewWidth / this.modal.scale
-    }
-
-    const viewHeight = (this.modal.pageRect.height + DesignService.SPAN * 2) * this.modal.scale
-    if (viewHeight < this.modal.canvaseRect.height) {
-      this.modal.pageRect.cheight = this.modal.canvaseRect.height / this.modal.scale
-    } else {
-      this.modal.pageRect.cheight = viewHeight / this.modal.scale
-    }
-
-    this.modal.pageRect.x = (this.modal.pageRect.cwidth - this.modal.pageRect.width) / 2
-    this.modal.pageRect.y = DesignService.SPAN / this.modal.scale
-
-    this.emit('page-resized', this.modal.pageRect)
-  }
-
   addScale (value: number) {
     this.setScale(this.modal.scale + value)
   }
 
+  // 设置缩放
   setScale (newscale: number) {
     if (newscale < 0.2) {
       newscale = 0.2
@@ -296,42 +251,10 @@ export default class DesignService {
     }
 
     this.modal.scale = newscale
-    this.recountPage()
+    this.utils.recountPage()
   }
 
-  clearnSelected () {
-    if (this.modal.selecteds && this.modal.selecteds.length > 0) {
-      for (let i = 0; i < this.modal.selecteds.length; i++) {
-        this.modal.selecteds[i].set('state', 0)
-      }
-
-      this.modal.selecteds.splice(0, this.modal.selecteds.length)
-    }
-  }
-
-  removeSelected(id: string){
-    const idx = this.modal.selecteds.findIndex(yWidget=>yWidget.get('id')===id)
-    this.modal.selecteds[idx].set('state', 0)
-    this.modal.selecteds.splice(idx, 1)
-  }
-
-  addSelected (widget: YWidget) {
-    if (widget) {
-      widget.set('state', 1)
-      this.modal.selecteds.push(widget)
-    }
-  }
-
-  setSelected (widgets: Array<YWidget>) {
-    this.clearnSelected()
-    if (widgets) {
-      for (let i = 0; i < widgets.length; i++) {
-        widgets[i].set('state', 1)
-      }
-      this.modal.selecteds.push(...widgets)
-    }
-  }
-
+  // 设置选中区域
   setSelectedArea (begin: Point, end: Point) {
     const pb = {
       x: Math.min(begin.x, end.x),
@@ -355,31 +278,43 @@ export default class DesignService {
     }
   }
 
-  newWidgetP2CavnaseP = (point: Point) => {
-    return {
-      x: (point.x - this.canvase2PanelRect.value.x + this.modal.scrollLeft) / this.modal.scale - this.modal.pageRect.x,
-      y: (point.y - this.canvase2PanelRect.value.y + this.modal.scrollTop) / this.modal.scale - this.modal.pageRect.y
+  // 设置选中的widget
+  addSelected (widget: YWidget) {
+    if (widget) {
+      widget.set('state', 1)
+      this.modal.selecteds.push(widget)
     }
   }
 
-  cavnaseP2NewWidgetP = (point: Point) => {
-    return {
-      x: (point.x + this.modal.pageRect.x)*this.modal.scale - this.modal.scrollLeft + this.canvase2PanelRect.value.x,
-      y: (point.y + this.modal.pageRect.y)*this.modal.scale - this.modal.scrollTop + this.canvase2PanelRect.value.y
+  // 设置选中的widgets
+  setSelected (widgets: Array<YWidget>) {
+    this.clearnSelected()
+    if (widgets) {
+      for (let i = 0; i < widgets.length; i++) {
+        widgets[i].set('state', 1)
+      }
+      this.modal.selecteds.push(...widgets)
     }
   }
 
-  inCanvase (event: MouseEvent) {
-    if (this.modal.newWidget) {
-      return (event.clientX - this.modal.canvaseRect.x - this.modal.pageRect.x > 0) &&
-        (event.clientY - this.modal.canvaseRect.y - this.modal.pageRect.y > 0) &&
-        (event.clientX < this.modal.canvaseRect.x + this.modal.pageRect.x + this.modal.pageRect.width) &&
-        (event.clientY < this.modal.canvaseRect.y + this.modal.pageRect.y + this.modal.pageRect.height)
-    } else {
-      return false
+  clearnSelected () {
+    if (this.modal.selecteds && this.modal.selecteds.length > 0) {
+      for (let i = 0; i < this.modal.selecteds.length; i++) {
+        this.modal.selecteds[i].set('state', 0)
+      }
+
+      this.modal.selecteds.splice(0, this.modal.selecteds.length)
     }
   }
 
+  // 删除选中的widget
+  removeSelected(id: string){
+    const idx = this.modal.selecteds.findIndex(yWidget=>yWidget.get('id')===id)
+    this.modal.selecteds[idx].set('state', 0)
+    this.modal.selecteds.splice(idx, 1)
+  }
+
+  // 修改页面尺寸内边距
   resizePage({newWidth,newHeight,oldWidth,oldHeight,newPadding,oldPadding}: Record<string, any>){
     this.modal.pageRect.width = newWidth
     this.modal.pageRect.height = newHeight
@@ -403,6 +338,7 @@ export default class DesignService {
       yWidget.set('x', (x + (x - nLeft) * widthRatio) + (nLeft - oLeft))
       yWidget.set('y', (y + (y - nTop) * heightRatio) + (nTop - oTop))
     })
-    this.recountPage()
+    this.utils.recountPage()
   }
+
 }

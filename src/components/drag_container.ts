@@ -62,7 +62,8 @@ export default defineComponent({
             id: props.value.id + '_cover',
             class: props.value.state === 4 ? 'cover moving' : 'cover',
             style: {
-              borderRadius: props.radius + 'px'
+              borderRadius: props.radius + 'px',
+              background: props.value.isOverlap?'rgba(242,5,6,0.7)':'',
             },
             onmousedown: (event: MouseEvent) => {
               if (props.value.enableDragable) {
@@ -123,7 +124,12 @@ export default defineComponent({
       return transform
     }
 
-    return { container, containerClass, renderCover, renderOperationBar, cssTransform, service, state: props.value.state }
+    return {
+      container, containerClass, renderCover,
+      renderOperationBar, cssTransform, service,
+      state: props.value.state,
+      tag: props.value.tag
+    }
   },
 
   render() {
@@ -137,7 +143,7 @@ export default defineComponent({
           width: this.$props.value.width + 'px',
           height: this.$props.value.height + 'px',
           borderRadius: this.$props.radius + 'px',
-          zIndex: this.state===-1 ? 2000:0
+          zIndex: this.state===-1 ? 2000:this.tag==='GridLayout'?0:10
         }
       },
       [

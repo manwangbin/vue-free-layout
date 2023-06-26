@@ -190,7 +190,7 @@ export default defineComponent({
         return
       }
 
-      if (designService.modal.selecteds.find(widget => (!widget.get('enableResize') || widget.get('moveing')))) {
+      if (designService.modal.selecteds.find(widget => (!widget.get('enableResize')))) {
         return
       }
 

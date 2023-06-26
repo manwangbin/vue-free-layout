@@ -2,7 +2,7 @@
 @-header-background: #ffffff;
 @-drawer-shadow-color: #90909060;
 @-widget-selected-shadow-color: #9a9a9a;
-@-widget-selected-border-color: rgb(24,160,251);
+@-widget-selected-border-color: #108b96;
 
 .design {
   position: relative;
@@ -35,8 +35,8 @@
 
       #free-layout-canvas {
         position: relative;
-        left: 0px;
-        top: 0px;
+        left: 0;
+        top: 0;
         transform-origin: left top;
 
         #drawer {
@@ -45,14 +45,14 @@
 
           .selected {
             cursor: pointer;
-            box-shadow: 0px 0px 4px @-widget-selected-shadow-color;
+            box-shadow: 0 0 4px @-widget-selected-shadow-color;
             z-index: 99;
           }
 
           .dragging {
             cursor: move;
             z-index: 100;
-            box-shadow: 0px 0px 2px @-widget-selected-shadow-color;
+            box-shadow: 0 0 2px @-widget-selected-shadow-color;
           }
 
           & > * {
@@ -74,36 +74,15 @@
     position: absolute;
     transform-origin: center;
 
-    // * {
-    //   position: absolute;
-    //   &:first-child {
-    //     z-index: 1;
-    //     left: 0px;
-    //     right: 0px;
-    //     width: 100%;
-    //     height: 100%;
-    //     margin: 0px;
-    //     padding: 0px;
-    //     box-sizing: border-box;
-    //   }
-
-    //   .controller {
-    //     position: absolute;
-    //     padding: 6px 10px;
-    //     background-color: #fff;
-    //     border-radius: 0px 0px 4px 4px;
-    //   }
-    // }
-
     .cover {
       width: 100%;
       height: 100%;
-      z-index: 200;
-      padding: 0px;
-      margin: 0px;
+      z-index: 1500;
+      padding: 0;
+      margin: 0;
       position: absolute;
-      left: 0px;
-      top: 0px;
+      left: 0;
+      top: 0;
       box-sizing: border-box;
 
       &:hover {
@@ -119,7 +98,7 @@
   .dragging {
     cursor: move;
     z-index: 999;
-    box-shadow: 0px 0px 6px @-widget-selected-shadow-color;
+    box-shadow: 0 0 6px @-widget-selected-shadow-color;
 
     transition: 0.1s left, 0.1s top;
     transition-timing-function: ease;
@@ -129,14 +108,14 @@
     transition-duration: 0.2s;
     transition-timing-function: ease;
     z-index: 101;
-    box-shadow: 0px 0px 6px @-widget-selected-shadow-color;
+    box-shadow: 0 0 6px @-widget-selected-shadow-color;
   }
 
   .size-border-container {
     position: absolute;
-    z-index: 101;
-    margin: 0px;
-    border: 0px;
+    z-index: 1510;
+    margin: 0;
+    border: 0;
 
     .border {
       background: @-widget-selected-border-color;
@@ -147,7 +126,7 @@
     height: 8px;
     cursor: row-resize;
     .border {
-      margin: 3px 0px;
+      margin: 3px 0;
       height: 2px;
       width: 100%
     }
@@ -157,7 +136,7 @@
     width: 8px;
     cursor: col-resize;
     .border {
-      margin: 0px 3px;
+      margin: 0 3px;
       width: 2px;
       height: 100%
     }
@@ -165,7 +144,7 @@
 
   .size-border-corn {
     position: absolute;
-    z-index: 101;
+    z-index: 1520;
     width: 12px;
     height: 12px;
 
@@ -176,6 +155,7 @@
       background-color: #fff;
       box-sizing: border-box;
       border: solid 1px @-widget-selected-border-color;
+      border-radius: 50%;
     }
   }
 
@@ -189,7 +169,7 @@
 
   .size-cover {
     position: absolute;
-    z-index: 102;
+    z-index: 1500;
     cursor: move;
     background: rgba(24,160,251, 0.05);
   }

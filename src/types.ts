@@ -24,6 +24,8 @@ export interface Widget extends Point {
   enableResize: boolean;
   // 是否运行拖动
   enableDragable: boolean;
+  // 是否允许重叠
+  allowOverlap: boolean
 }
 
 export interface DesignWidget extends Widget{
@@ -38,7 +40,9 @@ export interface DesignWidget extends Widget{
   // 基础纵坐标
   baseY: number;
   // 父节点
-  parent: string|undefined
+  parent: string|undefined;
+  // 是否重叠了
+  isOverlap: boolean
 }
 
 export interface DesignPanelRef {
@@ -47,6 +51,9 @@ export interface DesignPanelRef {
   getPageWidgets(): Array<DesignWidget>;
 }
 
-export type Mixin<T, K> = {
-  [P in keyof (T & K)]: (T & K)[P]
-};
+export interface Boundary{
+  top: number,
+  bottom: number,
+  left: number,
+  right: number
+}

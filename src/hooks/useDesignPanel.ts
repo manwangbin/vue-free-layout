@@ -64,9 +64,10 @@ export function useDesignPanel(designPanel?: Ref<DesignPanelRef|null>){
   }
 
   function setPadding(padding: number[]){
+    if(!service.value) return
     const [top, right, bottom, left] = designModal.value.pageRect.padding
-    service.value?.setPadding(padding)
-    service.value?.resizePage({
+    service.value.modal.pageRect.padding = service.value?.utils.paddingFormat(padding)
+    service.value.resizePage({
       newWidth: designModal.value.pageRect.width,
       newHeight: designModal.value.pageRect.height,
       oldWidth: designModal.value.pageRect.width,
