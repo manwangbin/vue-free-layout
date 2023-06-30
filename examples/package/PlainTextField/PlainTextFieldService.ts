@@ -23,8 +23,15 @@ export class PlainTextFieldService extends FieldService{
   label = ''
   value = '内容内容内容内容内容内容内容内容内容内容内容'
 
-  constructor(id: string) {
-    super()
+  constructor(id: string, attrs: any) {
+    super(attrs)
     this.id = id
+    attrs.value && (this.value = attrs.value)
+  }
+
+  getState(){
+    return {
+      value: this.value
+    }
   }
 }

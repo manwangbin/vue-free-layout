@@ -91,6 +91,7 @@ export default defineComponent({
     const bgmousedownHandler = (event: MouseEvent) => {
       if(event.button!==0) return
       designService.clearnSelected()
+      designService.emitter.emit('onBGMousedown')
       selectedArea.value.begin = converClientP2PanelP(event)
       window.addEventListener('mousemove', bgmousemoveHandler, true)
       window.addEventListener('mouseup', bgmouseupHandler, true)
@@ -161,7 +162,8 @@ export default defineComponent({
           renderSizeBorders(),
           renderSelectedArea(),
           renderAlignmentLine(),
-          renderOperationBar()
+          renderOperationBar(),
+          // JSON.stringify(designService.modal.selecteds.map(i=>i.toJSON()))
         ]
       )
     }
@@ -215,6 +217,7 @@ export default defineComponent({
           return  h(
             'div',
             {
+              id: line.id,
               class: 'alignment-line',
               style: {
                 display: line.show && option?.showAlign?'':'none',
@@ -239,10 +242,8 @@ export default defineComponent({
 
     // 操作栏
     const renderOperationBar = () => {
-      if(!designService.modal.selecteds || designService.modal.selecteds.length===0) return
-      return h(
-        OperationBar,
-      )
+      if(!designService.modal.selecteds || designService.modal.selecteds.length === 0) return
+      return h(OperationBar)
     }
 
     return { drawer, designService, containerWidth, containerHeight, renderDrawer, bgmousedownHandler }

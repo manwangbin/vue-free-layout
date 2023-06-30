@@ -25,7 +25,8 @@ export interface Widget extends Point {
   // 是否运行拖动
   enableDragable: boolean;
   // 是否允许重叠
-  allowOverlap: boolean
+  allowOverlap: boolean,
+  list?: Array<Omit<DesignWidget, 'list'>>
 }
 
 export interface DesignWidget extends Widget{
@@ -42,7 +43,7 @@ export interface DesignWidget extends Widget{
   // 父节点
   parent: string|undefined;
   // 是否重叠了
-  isOverlap: boolean
+  isOverlapping: boolean
 }
 
 export interface DesignPanelRef {

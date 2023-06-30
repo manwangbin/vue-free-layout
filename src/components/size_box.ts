@@ -321,14 +321,11 @@ export default defineComponent({
               top: (position.value.y) + 'px',
               width: position.value.width + 'px',
               height: position.value.height + 'px',
-              background: service.modal.isOverlap?'rgba(242,5,6,0.7)':'',
+              background: service.modal.isOverlapping?'rgba(255, 100, 100, 0.05)':'',
               zIndex: 1500
             },
             onmousedown: (event:MouseEvent) => service.mousedownHandler(event, undefined)
-          },
-          [
-            h('div', {}, service.modal.isOverlap)
-          ]
+          }
         )
       }
     }

@@ -17,15 +17,16 @@
 
 <script setup lang="ts">
 import { TextFieldService } from "./TextFieldService";
-import { computed, provide } from "vue";
+import { computed, useAttrs } from "vue";
 import { useStateMap } from "../hooks";
 
 const props = defineProps<{
   id: string,
-  state: number
 }>()
 
-const state = useStateMap<TextFieldService>(props.id, new TextFieldService(props.id))
+const attrs = useAttrs()
+
+const state = useStateMap<TextFieldService>(props.id, new TextFieldService(props.id, attrs))
 
 const style = computed(()=>state.style)
 

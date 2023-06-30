@@ -4,6 +4,7 @@
     <div class="opt-group">
       <div class="opt-content">
         <div class="item" @click="print">打印</div>
+        <div class="item" @click="getWidgets">获取widget列表</div>
       </div>
       <div class="opt-title">纸张</div>
       <div class="opt-content">
@@ -59,7 +60,8 @@ const {
   columnBetween,
   print,
   changePageSize,
-  setPadding
+  setPadding,
+  getWidgets
 } = useDesignPanel()
 
 const selecteds = computed(()=>designModal.value.selecteds)

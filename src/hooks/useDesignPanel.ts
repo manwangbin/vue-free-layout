@@ -23,6 +23,12 @@ export function useDesignPanel(designPanel?: Ref<DesignPanelRef|null>){
     service.value?.createWidgetHandler(widget)
   }
 
+  function getWidgets(){
+    const widgets = service.value?.getWidgets()
+    console.log('getWidgets',widgets);
+    return widgets
+  }
+
   function getPageRect(){
     return designModal.value?.pageRect
   }
@@ -101,6 +107,7 @@ export function useDesignPanel(designPanel?: Ref<DesignPanelRef|null>){
     getPageRect,
     onLayout,
     createWidget,
+    getWidgets,
     leftJustify,
     rightJustify,
     topJustify,

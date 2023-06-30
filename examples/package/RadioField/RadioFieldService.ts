@@ -28,8 +28,22 @@ export class RadioFieldService extends FieldService{
     value: '2'
   }]
 
-  constructor(id: string) {
-    super()
+  constructor(id: string, attrs: any){
+    super(attrs)
     this.id = id
+    attrs.label && (this.label = attrs.label)
+    attrs.value && (this.value = attrs.value)
+    attrs.options && (this.options = attrs.options)
+  }
+
+  getState(){
+    return {
+      label: this.label,
+      value: this.value,
+      options: this.options,
+      style: this.style,
+      labelStyle: this.labelStyle,
+      valueStyle: this.valueStyle
+    }
   }
 }

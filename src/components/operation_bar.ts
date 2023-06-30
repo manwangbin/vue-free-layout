@@ -10,7 +10,7 @@ export default defineComponent({
 
     function deleteWidget(){
       designService.modal.selecteds.forEach((yWidget)=>{
-        designService.deleteWidget(yWidget.toJSON() as DesignWidget)
+        designService.deleteWidget(yWidget.get('id'))
       })
       designService.modal.selecteds = []
     }

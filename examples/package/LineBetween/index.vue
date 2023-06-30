@@ -12,13 +12,15 @@
 <script setup lang="ts">
 import { useStateMap } from "../hooks";
 import { LineBetweenService } from "./LineBetweenService";
+import { useAttrs } from "vue";
 
 const props = defineProps<{
   id: string,
-  state: number
 }>()
 
-const state = useStateMap<LineBetweenService>(props.id, new LineBetweenService(props.id))
+const attrs = useAttrs()
+
+const state = useStateMap<LineBetweenService>(props.id, new LineBetweenService(props.id, attrs))
 
 </script>
 

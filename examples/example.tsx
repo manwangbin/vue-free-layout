@@ -3,6 +3,7 @@ import { defineComponent, Ref, ref, h } from 'vue'
 import Header from './header'
 import WidgetPanel from './widget_panel'
 import { Package } from "./package/index";
+import { stateMap } from "./package/hooks";
 import OperationPanel from "./operation_panel.vue";
 import { DesignPanelRef, Widget } from '@/types'
 import { useDesignPanel } from "../src/hooks/useDesignPanel";
@@ -22,14 +23,18 @@ export default defineComponent({
       createWidget
     } = useDesignPanel(designPanel)
 
-    return { designPanel, createWidget }
+    const widgets = []
+
+    return { designPanel, stateMap, createWidget, widgets }
   },
 
   render () {
     return (
       <DesignPanel
         ref="designPanel"
-        style="margin:10px 100px;height: 880px;"
+        style="height: 100vh;"
+        stateMap={stateMap}
+        value={this.widgets}
         width={841}
         height={1189}
         showAlign={true}

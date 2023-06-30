@@ -5,7 +5,7 @@ import { YWidget } from "@/services/synchronize.service";
 
 interface Modal {
   beginDragging: boolean;
-  isOverlap: boolean
+  isOverlapping: boolean
 }
 
 export default class DraggingService {
@@ -18,17 +18,19 @@ export default class DraggingService {
   constructor (public service: DesignService, public emit: (event: 'drag-start' | 'drag-moving' | 'drag-end', ...args: any[]) => void) {
     this.modal = reactive({
       beginDragging: false,
-      isOverlap: false,
+      isOverlapping: false,
     })
     this.dragStartPosition = { x: -1, y: -1 }
   }
 
+  // 拖动单个组件时、拖动网格子组件时yWidget存在，拖动多个组件yWidget不存在
   mousedownHandler (event: MouseEvent, yWidget?: YWidget) {
     event.preventDefault()
     event.stopPropagation()
 
     window.addEventListener('mousemove', this.dragHandler, true)
     window.addEventListener('mouseup', this.dragEndHandler, true)
+
 
     this.dragStartPosition.x = event.clientX
     this.dragStartPosition.y = event.clientY
@@ -40,6 +42,8 @@ export default class DraggingService {
       }
     }
 
+    yWidget && this.service.emitter.emit('onMousedown', yWidget)
+
     this.modal.beginDragging = false
     this.orgPosition.clear()
     for (let i = 0; i < this.service.modal.selecteds.length; i++) {
@@ -47,9 +51,6 @@ export default class DraggingService {
       yWidget.set('moveing', true)
       this.orgPosition.set(yWidget.get('id') as string, { x: yWidget.get('x'), y: yWidget.get('y') } as Point)
     }
-    this.service.emitter.emit('onMousedown', (yWidget: YWidget)=>{
-      this.orgPosition.set(yWidget.get('id') as string, { x: yWidget.get('x'), y: yWidget.get('y') } as Point)
-    })
     // 记录最后的位置
     this.copyWidgets = this.service.modal.selecteds.map(item=>item.toJSON()) as DesignWidget[]
   }
@@ -81,16 +82,18 @@ export default class DraggingService {
 
     // 判断是否重叠
     const widgets = this.service.modal.selecteds.map(item=>item.toJSON()) as DesignWidget[]
-    if(!this.service.utils.isNotOverlap(widgets)){
+    // 不重叠为true
+    const gridNotOverlapping = this.service.isNotOverlapInGridPublisher.emit(widgets).every(item=>item)
+    if(!(this.service.utils.isNotOverlap(widgets)&&gridNotOverlapping)){
       this.service.modal.selecteds.forEach(yWidget=>{
-        yWidget.set('isOverlap', true)
+        yWidget.set('isOverlapping', true)
       })
-      this.modal.isOverlap = true
+      this.modal.isOverlapping = true
     }else{
       this.service.modal.selecteds.forEach(yWidget=>{
-        yWidget.set('isOverlap', false)
+        yWidget.set('isOverlapping', false)
       })
-      this.modal.isOverlap = false
+      this.modal.isOverlapping = false
     }
 
     this.service.alignLineService?.onWidgetGroupMove(this.service.modal.selecteds)
@@ -99,10 +102,6 @@ export default class DraggingService {
       this.service.modal.selecteds.map(yWidget=>yWidget.toJSON()) as Array<DesignWidget>)
 
     this.service.utils.autoHeight(bottom)
-
-    if(this.service.modal.selecteds.length===1){
-      this.service.emitter.emit('onWidgetMove', this.service.modal.selecteds[0].toJSON())
-    }
   }
 
 
@@ -114,28 +113,29 @@ export default class DraggingService {
 
     this.modal.beginDragging = false
 
+    if(this.service.modal.selecteds.length===1 && !this.modal.isOverlapping){
+      this.service.emitter.emit('onAddWidget', this.service.modal.selecteds[0])
+    }
+
     for (let i = 0; i < this.service.modal.selecteds.length; i++) {
       const yWidget = this.service.modal.selecteds[i]
       yWidget.set('moveing', false)
       yWidget.set('state', 1)
 
-      if(this.modal.isOverlap){
+      if(this.modal.isOverlapping){
         const copyWidget = this.copyWidgets[i]
         yWidget.set('x', copyWidget.x)
         yWidget.set('y', copyWidget.y)
         yWidget.set('baseX', copyWidget.baseX)
         yWidget.set('baseY', copyWidget.baseY)
         yWidget.set('parent', copyWidget.parent)
-        yWidget.set('isOverlap', false)
+        yWidget.set('isOverlapping', false)
       }
       this.emit('drag-end', yWidget.toJSON())
     }
 
-    this.modal.isOverlap = false
+    this.modal.isOverlapping = false
 
-    if(this.service.modal.selecteds.length===1){
-      this.service.emitter.emit('onAddWidget', this.service.modal.selecteds[0])
-    }
     this.orgPosition.clear()
   }
 

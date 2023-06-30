@@ -4,9 +4,9 @@ import { onBeforeUnmount } from "vue";
 import { DesignWidget } from "@/types";
 import { CheckType } from "@/utils/checkType";
 
-export type MapVal = string|number|boolean|undefined|Array<number>
+export type YWidget = Y.Map<any>
 
-export type YWidget = Y.Map<MapVal>
+export type YArray = Y.Array<YWidget>
 
 interface Delta {
   insert?: Array<any> | string;
@@ -17,7 +17,7 @@ interface Delta {
 interface KeysData {
   key: string,
   action: 'add' | 'update' | 'delete',
-  value: MapVal
+  value: any
 }
 
 export interface UpdateData {
@@ -43,7 +43,7 @@ export default class SynchronizeService<T>{
       {connect: false}
     )
     // this.wsProvider.connect()
-    this.yWidget = this.ydoc.getArray<Y.Map<MapVal>>('arr')
+    this.yWidget = this.ydoc.getArray<YWidget>('arr')
 
     this.yWidget.observeDeep(this._onDataUpdate.bind(this))
 
@@ -51,9 +51,9 @@ export default class SynchronizeService<T>{
   }
 
   createWidget(widget: DesignWidget){
-    const map = new Y.Map<MapVal>()
+    const map = new Y.Map<any>()
     for (let key in widget) {
-      map.set(key, widget[key as keyof DesignWidget])
+      map.set(key, <string | number | boolean | Array<number> | undefined>widget[key as keyof DesignWidget])
     }
     return map
   }
@@ -61,9 +61,7 @@ export default class SynchronizeService<T>{
   // 监听Widget数组的更新
   _onDataUpdate(YArrayEvent: Array<any>, Transaction: any){
     const data = this.yWidget.toJSON() as T[]
-
     let updateData: UpdateData[] = []
-
     YArrayEvent.forEach(event=>{
       const eventData = {
         added: event.changes.added,
@@ -139,13 +137,7 @@ export default class SynchronizeService<T>{
     if(!CheckType.isArray(current)) throw 'handlerArray current not array'
     // 插入数据
     if(deltaData.insert && CheckType.isArray(deltaData.insert)){
-      const insertData = deltaData.insert.map(item=>{
-        if(item instanceof Y.Map || item instanceof Y.Array){
-          return item.toJSON()
-        }else{
-          return  item
-        }
-      })
+      const insertData = deltaData.insert.map(item=>(item instanceof Y.Map || item instanceof Y.Array)?item.toJSON():item)
       current.splice(deltaData.retain||0, 0, ...insertData)
     } else if(deltaData.delete && CheckType.isNumber(deltaData.delete)){
       current.splice(deltaData.retain||0, deltaData.delete)
@@ -159,7 +151,13 @@ export default class SynchronizeService<T>{
     if(keysData.action === 'delete'){
       Reflect.deleteProperty(current, keysData.key)
     }else{
-      Reflect.set(current, keysData.key, keysData.value)
+      // 设置时判断value是否为Y.Map || Y.Array
+      if(CheckType.isArray(keysData.value)){
+        const insertData = keysData.value.map(item=>(item instanceof Y.Map || item instanceof Y.Array)?item.toJSON():item)
+        Reflect.set(current, keysData.key, insertData)
+      }else{
+        Reflect.set(current, keysData.key, keysData.value)
+      }
     }
   }
 
@@ -167,5 +165,4 @@ export default class SynchronizeService<T>{
     this.yWidget.unobserveDeep(this._onDataUpdate)
     this.wsProvider.destroy()
   }
-
 }

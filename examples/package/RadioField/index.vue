@@ -23,15 +23,16 @@
 
 <script setup lang="ts">
 import { RadioFieldService } from "./RadioFieldService";
-import { computed } from "vue";
+import { computed, useAttrs } from "vue";
 import { useStateMap } from "../hooks";
 
 const props = defineProps<{
   id: string,
-  state: number
 }>()
 
-const state = useStateMap<RadioFieldService>(props.id, new RadioFieldService(props.id))
+const attrs = useAttrs()
+
+const state = useStateMap<RadioFieldService>(props.id, new RadioFieldService(props.id, attrs))
 
 const style = computed(()=>state.style)
 

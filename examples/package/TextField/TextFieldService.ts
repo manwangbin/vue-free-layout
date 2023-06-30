@@ -24,9 +24,22 @@ export class TextFieldService extends FieldService{
   label = '普通字段'
   value = '内容内容内容内容内容内容内容内容内容内容内容'
 
-  constructor(id: string) {
-    super()
+  constructor(id: string, attrs: any) {
+    super(attrs)
     this.id = id
+    attrs.label && (this.label = attrs.label)
+    attrs.value && (this.value = attrs.value)
+  }
+
+  getState() {
+    return {
+      label: this.label,
+      value: this.value,
+      style: this.style,
+      direction: this.direction,
+      labelStyle: this.labelStyle,
+      valueStyle: this.valueStyle
+    }
   }
 
 }

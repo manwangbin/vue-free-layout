@@ -17,7 +17,10 @@ export default defineComponent({
       type: Array as PropType<Array<Widget>>,
       default: () => new Array()
     },
-
+    stateMap: {
+      type: Map,
+      required: true
+    },
     width: {
       type: Number,
       required: true
@@ -111,7 +114,8 @@ export default defineComponent({
     const designContainer: Ref<HTMLElement | undefined> = ref()
     const designBody: Ref<HTMLElement | undefined> = ref()
 
-    const service = new DesignService(props, emit)
+    const service = new DesignService(props, emit, slots)
+
 
     /**
      * 添加新的控件

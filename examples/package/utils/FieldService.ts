@@ -28,6 +28,13 @@ export abstract class FieldService implements FieldInterface{
     decorations: []
   }
 
+  protected constructor(attrs: any) {
+    attrs.direction && (this.direction = attrs.direction)
+    attrs.style && (this.style = attrs.style)
+    attrs.labelStyle && (this.labelStyle = attrs.labelStyle)
+    attrs.valueStyle && (this.valueStyle = attrs.valueStyle)
+  }
+
   setDirection(id: string, direction: Direction): void{
     switch (direction) {
       case Direction.COLUMN:
@@ -59,5 +66,5 @@ export abstract class FieldService implements FieldInterface{
       textDecoration: style.textDecoration
     }
   }
-
+  abstract getState(): unknown;
 }

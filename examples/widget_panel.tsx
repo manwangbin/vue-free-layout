@@ -22,7 +22,6 @@ export default defineComponent({
 
     function getWidgetOpt(widget: Record<string, any>): Widget{
       const { width, padding } = getPageRect()
-      console.log(width, padding);
       let widgetWidth = width - padding[1] - padding[3]
       switch (widget.width.type){
         case 'percentage':

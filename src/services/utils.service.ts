@@ -5,7 +5,7 @@ import { Boundary, DesignWidget, Point } from "@/types";
 export default class UtilsService{
 
 
-  constructor(public service: DesignService) {
+  constructor(private service: DesignService) {
   }
 
 
@@ -68,6 +68,7 @@ export default class UtilsService{
     if(left < 0 || top < 0 || right>pageRect.width){
       return false
     }
+
 
     return this.service.modal.widgets.every(widget=>{
       if(widget.allowOverlap)return true
@@ -144,6 +145,15 @@ export default class UtilsService{
         this.service.modal.scrollLeft + this.service.canvase2PanelRect.value.x,
       y: (point.y + this.service.modal.pageRect.y)*this.service.modal.scale -
         this.service.modal.scrollTop + this.service.canvase2PanelRect.value.y
+    }
+  }
+
+  getYWidgetById(id: string){
+    let yWidgets = this.service.syncService.yWidget.toArray()
+    const idx = yWidgets.findIndex(item=>item.get('id')===id)
+    return {
+      yWidget: this.service.syncService.yWidget.get(idx),
+      index: idx
     }
   }
 }

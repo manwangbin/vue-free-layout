@@ -1,9 +1,10 @@
 import { onBeforeUnmount, onMounted, reactive, ref, Ref, watch } from "vue";
+import { FieldInterface } from "./utils/FieldInterface";
 
 
-const stateMap = new Map<string, any>()
+export const stateMap = new Map<string, FieldInterface>()
 
-export function useStateMap<S extends object>(id: string, fileObj: S){
+export function useStateMap<S extends object>(id: string, fileObj: FieldInterface){
   const state = reactive(fileObj)
 
   onMounted(()=>{
@@ -14,7 +15,7 @@ export function useStateMap<S extends object>(id: string, fileObj: S){
 }
 
 export function useOptStateMap<S>(id: Ref<string>){
-  const state: Ref<S|undefined> = ref()
+  const state: Ref<FieldInterface|undefined> = ref()
 
   onMounted(()=>{
     state.value = stateMap.get(id.value)

@@ -1,10 +1,12 @@
-import { Boundary, DesignWidget, Point, Widget } from "../types";
+import { DesignWidget, Point, Widget } from "../types";
 import { computed } from '@vue/reactivity'
-import { ComputedRef, InjectionKey, nextTick, provide, reactive, ref, Ref, watch } from "vue";
-import AlignmentLineService, { BoundaryLine } from "@/services/alignmentLine.service";
+import { Component, InjectionKey, provide, reactive, ref, Ref, toRaw, watch } from "vue";
+import AlignmentLineService from "@/services/alignmentLine.service";
 import SynchronizeService, { YWidget } from "@/services/synchronize.service";
 import mitt from 'mitt'
 import UtilsService from "@/services/utils.service";
+import { Publisher } from "@/utils/publisher";
+import { FieldInterface } from "@/package/utils/FieldInterface";
 
 export interface Modal {
   newWidget?: DesignWidget;
@@ -30,10 +32,13 @@ export interface Modal {
 
 export default class DesignService {
   static token:InjectionKey<DesignService> = Symbol('DesignService');
+  static itemSlot: InjectionKey<(widget: DesignWidget)=>Component> = Symbol()
 
   static SPAN = 40
 
   drawerRef: Ref<HTMLElement | null> = ref(null)
+
+  stateMap: Map<string, FieldInterface>;
 
   selectedNewWidget?: Widget;
 
@@ -51,6 +56,9 @@ export default class DesignService {
 
   alignLineService: AlignmentLineService
 
+  // 获取在网格是否重叠的函数
+  isNotOverlapInGridPublisher = new Publisher<(widgets: Array<DesignWidget>)=>boolean, Array<DesignWidget>>()
+
   // 所有选中元素构成的位置
   selectedPosition = computed(() => {
     const bxarray = this.modal.selecteds.map(item => <number>item.get('x'))
@@ -66,7 +74,6 @@ export default class DesignService {
       x: Math.max(...exarray),
       y: Math.max(...eyarray)
     }
-
     return {
       x: begin.x,
       y: begin.y,
@@ -87,12 +94,15 @@ export default class DesignService {
   emitter = mitt<Record<string, any>>()
 
   constructor (props: any,
-               public emit: (event:'page-resized' | 'drag-start' | 'drag-moving' | 'drag-end', ...args: any)=>void) {
+               public emit: (event:'page-resized' | 'drag-start' | 'drag-moving' | 'drag-end', ...args: any)=>void,
+               slots: any) {
     provide(DesignService.token, this)
+    provide(DesignService.itemSlot, slots.item)
 
     this.syncService = new SynchronizeService()
     this.alignLineService = new AlignmentLineService(props, this)
     this.utils = new UtilsService(this)
+    this.stateMap = props.stateMap
 
     let {value: widgets,width, height}: {
       value: DesignWidget[],
@@ -115,6 +125,14 @@ export default class DesignService {
       widgets: [],
     })
 
+    // 监听yjs数据更新
+    this.syncService.onDataUpdate = (data, updateData)=>{
+      updateData.forEach(update=>{
+        update.handler(this.modal.widgets)
+        this.alignLineService?.handlerAlignmentLine(update)
+      })
+    }
+
     if (widgets) {
       let w = widgets.map(item =>
         this.syncService.createWidget({
@@ -129,13 +147,6 @@ export default class DesignService {
       this.syncService.yWidget.push(w)
     }
 
-    // 监听yjs数据更新
-    this.syncService.onDataUpdate = (data, updateData)=>{
-      updateData.forEach(update=>{
-        update.handler(this.modal.widgets)
-        this.alignLineService?.handlerAlignmentLine(update)
-      })
-    }
     this.modal.canvaseRect.height = height + DesignService.SPAN * 2 / this.modal.scale
 
     // 监听页面宽高修改
@@ -153,6 +164,7 @@ export default class DesignService {
 
   createWidgetHandler (widget: Widget) {
     this.selectedNewWidget = widget
+    this.emitter.emit('onCreateWidget')
     window.addEventListener('mousemove', this.newWidgetDragingRegistHandler, true)
     window.addEventListener('mouseup', this.newWidgetDropRegistHandler, true)
   }
@@ -169,7 +181,7 @@ export default class DesignService {
           ...this.selectedNewWidget, x: x, y: y, state: -1,
           moveing: false, resizing: false, baseX: x, baseY: y,
           parent: 'root',
-          isOverlap: false
+          isOverlapping: false
         }
         this.selectedNewOrgState = { ...this.modal.newWidget }
       }
@@ -190,12 +202,14 @@ export default class DesignService {
       }
 
       this.alignLineService?.onNewWidgetMove([widget], this)
+
+      // 不重叠为true
+      const gridNotOverlapping = this.isNotOverlapInGridPublisher.emit([widget]).every(item=>item)
+      console.log('gridNotOverlapping',gridNotOverlapping);
       // 判断是否重叠
-      this.modal.newWidget.isOverlap = !this.utils.isNotOverlap([widget]);
+      this.modal.newWidget.isOverlapping = !(this.utils.isNotOverlap([widget]) && gridNotOverlapping);
 
       this.utils.autoHeight(widget.y+widget.height)
-
-      this.emitter.emit('onWidgetMove', widget)
 
       this.emit("drag-moving", this.modal.newWidget)
     }
@@ -204,7 +218,7 @@ export default class DesignService {
   newWidgetDropRegistHandler = (event: MouseEvent) => {
     window.removeEventListener('mousemove', this.newWidgetDragingRegistHandler, true)
     window.removeEventListener('mouseup', this.newWidgetDropRegistHandler, true)
-    if (this.modal.newWidget && !this.modal.newWidget.isOverlap) {
+    if (this.modal.newWidget && !this.modal.newWidget.isOverlapping) {
       const widget = {
         ...this.modal.newWidget,
       } as DesignWidget
@@ -229,11 +243,11 @@ export default class DesignService {
     this.selectedNewOrgState = undefined
   }
 
-  deleteWidget(widget: DesignWidget){
-    const widgetIdx = this.modal.widgets.findIndex(item=>item.id === widget.id)
+  deleteWidget(id: string){
+    const widgetIdx = this.syncService.yWidget.toArray().findIndex(item=>item.get('id') === id)
     if(widgetIdx===-1) return
     this.syncService.yWidget.delete(widgetIdx, 1)
-    this.alignLineService?.delBoundaryLine(widget.id)
+    this.alignLineService?.delBoundaryLine(id)
   }
 
   addScale (value: number) {
@@ -308,8 +322,8 @@ export default class DesignService {
   }
 
   // 删除选中的widget
-  removeSelected(id: string){
-    const idx = this.modal.selecteds.findIndex(yWidget=>yWidget.get('id')===id)
+  deleteSelected(id: string){
+    const idx = this.modal.selecteds.findIndex(widget=>widget.get('id')===id)
     this.modal.selecteds[idx].set('state', 0)
     this.modal.selecteds.splice(idx, 1)
   }
@@ -341,4 +355,26 @@ export default class DesignService {
     this.utils.recountPage()
   }
 
+  getWidgets(){
+    // 通知各个组件格式好数据
+    this.emitter.emit('formatWidget')
+    const widgets = this.modal.widgets.map(widget=>({
+      id: widget.id,
+      tag: widget.tag,
+      x: widget.x,
+      y: widget.y,
+      width: widget.width,
+      height: widget.height,
+      margin: widget.margin,
+      padding: widget.padding,
+      enableResize: widget.enableResize,
+      enableDragable: widget.enableDragable,
+      allowOverlap: widget.allowOverlap,
+      list: widget.list,
+      ...(this.stateMap.get(widget.id)?.getState()||{})
+    }))
+
+
+    return widgets
+  }
 }

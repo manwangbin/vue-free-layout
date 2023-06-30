@@ -28,4 +28,6 @@ export interface FieldInterface{
   setDirection(id: string, direction: Direction): void
 
   setFontStyle(id: string, tag: 'labelStyle'|'valueStyle', selected: any[]): void
+
+  getState(): unknown
 }

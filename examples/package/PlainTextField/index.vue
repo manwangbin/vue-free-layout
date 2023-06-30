@@ -13,15 +13,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, useAttrs } from "vue";
 import { useStateMap } from "../hooks";
 import { PlainTextFieldService } from "./PlainTextFieldService";
 
 const props = defineProps<{
   id: string,
-  state: number
 }>()
-const state = useStateMap<PlainTextFieldService>(props.id, new PlainTextFieldService(props.id))
+
+const attrs = useAttrs()
+
+const state = useStateMap<PlainTextFieldService>(props.id, new PlainTextFieldService(props.id, attrs))
 
 const style = computed(()=>state.style)
 
