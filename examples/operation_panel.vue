@@ -47,6 +47,7 @@ import { Package } from "./package/index";
 import Select from "./components/Select/index.vue";
 import RadioButton from "./components/RadioButton/index.vue";
 import { useDesignPanel } from "../src/hooks/useDesignPanel";
+// import { useDesignPanel } from "../dist/vue3-free-layout.esm";
 import { computed, reactive } from "vue";
 import { pagePadding, layoutOpt, pageSize } from "./package/utils/options";
 

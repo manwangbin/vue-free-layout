@@ -1,12 +1,14 @@
 import DesignPanel from '@/components/design_panel'
-import { defineComponent, Ref, ref, h } from 'vue'
+import { useDesignPanel } from "../src/hooks/useDesignPanel";
+// import {DesignPanel, useDesignPanel} from "../dist/vue3-free-layout.esm";
+// import "../dist/vue3-free-layout.esm.css"
+import { defineComponent, Ref, ref, h, onMounted } from "vue";
 import Header from './header'
 import WidgetPanel from './widget_panel'
 import { Package } from "./package/index";
 import { stateMap } from "./package/hooks";
 import OperationPanel from "./operation_panel.vue";
 import { DesignPanelRef, Widget } from '@/types'
-import { useDesignPanel } from "../src/hooks/useDesignPanel";
 import './style.less'
 
 export default defineComponent({
@@ -20,12 +22,20 @@ export default defineComponent({
     const designPanel:Ref<DesignPanelRef|null> = ref(null)
 
     const {
-      createWidget
+      createWidget,
+      updateWidget,
+      delWidget
     } = useDesignPanel(designPanel)
 
     const widgets = []
 
-    return { designPanel, stateMap, createWidget, widgets }
+    function onDragEnd(widget){
+      // console.log('onDragEnd', widget);
+      // widget.x = 10
+      // updateWidget(widget)
+    }
+
+    return { onDragEnd, designPanel, stateMap, createWidget, widgets }
   },
 
   render () {
@@ -52,6 +62,7 @@ export default defineComponent({
           item: (widget:any) => h(Package[widget.tag], widget)
             // <input style="width: 100%;box-sizing: border-box;"></input>
         }}
+        onDrag-end={(widget) => this.onDragEnd(widget)}
         >
       </DesignPanel>
     )

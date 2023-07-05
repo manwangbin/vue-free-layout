@@ -59,29 +59,6 @@ export default class DesignService {
   // 获取在网格是否重叠的函数
   isNotOverlapInGridPublisher = new Publisher<(widgets: Array<DesignWidget>)=>boolean, Array<DesignWidget>>()
 
-  // 所有选中元素构成的位置
-  selectedPosition = computed(() => {
-    const bxarray = this.modal.selecteds.map(item => <number>item.get('x'))
-    const byarray = this.modal.selecteds.map(item => <number>item.get('y'))
-    const begin = {
-      x: Math.min(...bxarray),
-      y: Math.min(...byarray)
-    }
-
-    const exarray = this.modal.selecteds.map(item => <number>item.get('x') + <number>item.get('width'))
-    const eyarray = this.modal.selecteds.map(item => <number>item.get('y') + <number>item.get('height'))
-    const end = {
-      x: Math.max(...exarray),
-      y: Math.max(...eyarray)
-    }
-    return {
-      x: begin.x,
-      y: begin.y,
-      width: (end.x - begin.x),
-      height: (end.y - begin.y)
-    }
-  })
-
   canvase2PanelRect = computed(() => {
     return {
       x: this.modal.canvaseRect.x - this.modal.rect.x,
@@ -158,7 +135,7 @@ export default class DesignService {
         oldHeight: oldVal[1],
         newPadding: this.modal.pageRect.padding,
         oldPadding: this.modal.pageRect.padding
-    })
+      })
     })
   }
 
@@ -205,7 +182,6 @@ export default class DesignService {
 
       // 不重叠为true
       const gridNotOverlapping = this.isNotOverlapInGridPublisher.emit([widget]).every(item=>item)
-      console.log('gridNotOverlapping',gridNotOverlapping);
       // 判断是否重叠
       this.modal.newWidget.isOverlapping = !(this.utils.isNotOverlap([widget]) && gridNotOverlapping);
 

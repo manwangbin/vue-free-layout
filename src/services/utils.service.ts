@@ -1,5 +1,6 @@
 import DesignService from "@/services/design.service";
 import { Boundary, DesignWidget, Point } from "@/types";
+import { YWidget } from "@/services/synchronize.service";
 
 
 export default class UtilsService{
@@ -64,10 +65,10 @@ export default class UtilsService{
   isNotOverlap(widgets: DesignWidget[]){
     const {top, bottom, left, right} = this.getBoundaryByWidget(widgets)
     // 先判断是否在页面中
-    const pageRect = this.service.modal.pageRect
-    if(left < 0 || top < 0 || right>pageRect.width){
-      return false
-    }
+    // const pageRect = this.service.modal.pageRect
+    // if(left < 0 || top < 0 || right>pageRect.width){
+    //   return false
+    // }
 
 
     return this.service.modal.widgets.every(widget=>{
@@ -148,7 +149,7 @@ export default class UtilsService{
     }
   }
 
-  getYWidgetById(id: string){
+  getYWidgetById(id: string): {yWidget: YWidget|undefined, index: number}{
     let yWidgets = this.service.syncService.yWidget.toArray()
     const idx = yWidgets.findIndex(item=>item.get('id')===id)
     return {

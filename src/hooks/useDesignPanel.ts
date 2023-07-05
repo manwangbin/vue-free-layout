@@ -1,5 +1,5 @@
 import { computed, ComputedRef, inject, nextTick, onBeforeUnmount, Ref } from "vue";
-import { DesignPanelRef, Widget } from "@/types";
+import { DesignPanelRef, DesignWidget, Widget } from "@/types";
 import DesignService, { Modal } from "@/services/design.service";
 import { printHTML } from "@/utils/print";
 
@@ -27,6 +27,28 @@ export function useDesignPanel(designPanel?: Ref<DesignPanelRef|null>){
     const widgets = service.value?.getWidgets()
     console.log('getWidgets',widgets);
     return widgets
+  }
+
+  function getYWidgets(){
+    return service.value?.syncService.yWidget
+  }
+
+  function updateWidget(widget: DesignWidget){
+    if(!service.value) return
+    const { yWidget } = service.value.utils.getYWidgetById(widget.id)
+    if(yWidget){
+      for (const key in widget) {
+        yWidget.set(key, widget[key as keyof DesignWidget])
+      }
+    }else{
+      console.error('设置的widget不存在' + widget.id)
+    }
+  }
+
+  function delWidget(id: string){
+    if(!service.value) return
+    service.value.deleteSelected(id)
+    service.value.deleteWidget(id)
   }
 
   function getPageRect(){
@@ -108,6 +130,9 @@ export function useDesignPanel(designPanel?: Ref<DesignPanelRef|null>){
     onLayout,
     createWidget,
     getWidgets,
+    getYWidgets,
+    updateWidget,
+    delWidget,
     leftJustify,
     rightJustify,
     topJustify,

@@ -1,6 +1,6 @@
 import DesignService from '../services/design.service'
 import DraggingService from '../services/dragging.service'
-import { computed, defineComponent, h, inject } from 'vue'
+import { computed, defineComponent, h, inject, onUnmounted, watch } from "vue";
 const MIN_SPAN = 8
 
 export default defineComponent({
@@ -12,7 +12,27 @@ export default defineComponent({
     const designService = inject(DesignService.token) as DesignService
     const service = new DraggingService(designService, emit)
 
-    const position = designService.selectedPosition
+    const position = computed(()=>{
+      const bxarray = designService.modal.selecteds.map(item => <number>item.get('x'))
+      const byarray = designService.modal.selecteds.map(item => <number>item.get('y'))
+      const begin = {
+        x: Math.min(...bxarray),
+        y: Math.min(...byarray)
+      }
+
+      const exarray = designService.modal.selecteds.map(item => <number>item.get('x') + <number>item.get('width'))
+      const eyarray = designService.modal.selecteds.map(item => <number>item.get('y') + <number>item.get('height'))
+      const end = {
+        x: Math.max(...exarray),
+        y: Math.max(...eyarray)
+      }
+      return {
+        x: begin.x,
+        y: begin.y,
+        width: (end.x - begin.x),
+        height: (end.y - begin.y)
+      }
+    })
 
     let orgPosition = { x: 0, y: 0, width: 0, height: 0 }
     const oldWidgetPosition = new Map<string, {x: number, y: number, width: number, height: number}>()
@@ -146,7 +166,8 @@ export default defineComponent({
               {
                 class: 'size-border-h border'
               }
-            )
+            ),
+            // h('sssxxx',{},[JSON.stringify(position.value)])
           ]
         ),
         // right

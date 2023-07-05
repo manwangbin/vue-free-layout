@@ -53,7 +53,7 @@ export default class SynchronizeService<T>{
   createWidget(widget: DesignWidget){
     const map = new Y.Map<any>()
     for (let key in widget) {
-      map.set(key, <string | number | boolean | Array<number> | undefined>widget[key as keyof DesignWidget])
+      map.set(key, widget[key as keyof DesignWidget])
     }
     return map
   }

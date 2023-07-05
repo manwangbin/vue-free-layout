@@ -40,6 +40,9 @@ export default class DraggingService {
       } else {
         this.service.setSelected([yWidget])
       }
+
+
+
     }
 
     yWidget && this.service.emitter.emit('onMousedown', yWidget)
@@ -70,12 +73,14 @@ export default class DraggingService {
 
     for (let i = 0; i < this.service.modal.selecteds.length; i++) {
       const yWidget = this.service.modal.selecteds[i]
+
       const orgPoint = this.orgPosition.get(yWidget.get('id') as string)
       if (orgPoint && yWidget) {
         yWidget.set('x', orgPoint.x + hspan)
         yWidget.set('y', orgPoint.y + vspan)
         yWidget.set('baseX', orgPoint.x + hspan)
         yWidget.set('baseY', orgPoint.y + vspan)
+
         this.emit('drag-moving', yWidget.toJSON())
       }
     }

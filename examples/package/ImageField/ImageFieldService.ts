@@ -11,7 +11,7 @@ export const widgetOpt = {
   },
   height: 220,
   margin: [0],
-  padding: [0],
+  padding: [0]
 }
 
 export class ImageFieldService extends FieldService{

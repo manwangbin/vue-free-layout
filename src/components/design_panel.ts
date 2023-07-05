@@ -59,7 +59,7 @@ export default defineComponent({
 
     rulerColorDark: {
       type: String,
-      default: '#646464 '
+      default: '#646464'
     },
 
     // 是否显示对齐线
@@ -100,7 +100,7 @@ export default defineComponent({
     // 页面内边距
     pagePadding: {
       type: Array,
-      default: 10
+      default: [10]
     },
 
   },
@@ -288,7 +288,7 @@ export default defineComponent({
               [
                 this.renderHRulter(),
                 this.renderVRulter(),
-                this.renderBody()
+                this.renderBody(),
               ]
             ),
             this.$slots.right && this.$slots.right()

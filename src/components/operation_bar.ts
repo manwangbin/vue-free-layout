@@ -1,12 +1,33 @@
-import { defineComponent, h, inject } from "vue";
+import { computed, defineComponent, h, inject } from "vue";
 import DesignService from "@/services/design.service";
-import { DesignWidget } from "@/types";
 
 const HEIGHR = 25
 
 export default defineComponent({
   setup(){
     const designService = inject(DesignService.token)!
+
+    const position = computed(()=>{
+      const bxarray = designService.modal.selecteds.map(item => <number>item.get('x'))
+      const byarray = designService.modal.selecteds.map(item => <number>item.get('y'))
+      const begin = {
+        x: Math.min(...bxarray),
+        y: Math.min(...byarray)
+      }
+
+      const exarray = designService.modal.selecteds.map(item => <number>item.get('x') + <number>item.get('width'))
+      const eyarray = designService.modal.selecteds.map(item => <number>item.get('y') + <number>item.get('height'))
+      const end = {
+        x: Math.max(...exarray),
+        y: Math.max(...eyarray)
+      }
+      return {
+        x: begin.x,
+        y: begin.y,
+        width: (end.x - begin.x),
+        height: (end.y - begin.y)
+      }
+    })
 
     function deleteWidget(){
       designService.modal.selecteds.forEach((yWidget)=>{
@@ -16,7 +37,7 @@ export default defineComponent({
     }
 
     return {
-      position: designService.selectedPosition,
+      position,
       deleteWidget,
       designService
     }

@@ -162,7 +162,7 @@ export default defineComponent({
           renderSizeBorders(),
           renderSelectedArea(),
           renderAlignmentLine(),
-          renderOperationBar(),
+          // renderOperationBar(),
           // JSON.stringify(designService.modal.selecteds.map(i=>i.toJSON()))
         ]
       )

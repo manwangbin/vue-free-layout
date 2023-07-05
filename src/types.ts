@@ -24,8 +24,9 @@ export interface Widget extends Point {
   enableResize: boolean;
   // 是否运行拖动
   enableDragable: boolean;
-  // 是否允许重叠
+  // 是否允许重叠 enable
   allowOverlap: boolean,
+  // components
   list?: Array<Omit<DesignWidget, 'list'>>
 }
 
