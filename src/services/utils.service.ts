@@ -65,14 +65,13 @@ export default class UtilsService{
   isNotOverlap(widgets: DesignWidget[]){
     const {top, bottom, left, right} = this.getBoundaryByWidget(widgets)
     // 先判断是否在页面中
-    // const pageRect = this.service.modal.pageRect
-    // if(left < 0 || top < 0 || right>pageRect.width){
-    //   return false
-    // }
+    const pageRect = this.service.modal.pageRect
 
-
+    if(left + (right-left)/2 < 0 || top + (bottom-top)/2 < 0 || right - (right-left)/2>pageRect.width){
+      return false
+    }
     return this.service.modal.widgets.every(widget=>{
-      if(widget.allowOverlap)return true
+      if(widget.enableOverlap)return true
       // 排除被选中的widget
       if(widgets.some(item=>item.id===widget.id)) return true
 

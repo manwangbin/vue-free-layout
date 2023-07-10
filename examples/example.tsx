@@ -1,8 +1,7 @@
-import DesignPanel from '@/components/design_panel'
-import { useDesignPanel } from "../src/hooks/useDesignPanel";
+import { DesignPanel, useDesignPanel} from "../src";
 // import {DesignPanel, useDesignPanel} from "../dist/vue3-free-layout.esm";
 // import "../dist/vue3-free-layout.esm.css"
-import { defineComponent, Ref, ref, h, onMounted } from "vue";
+import { defineComponent, Ref, ref, h, onMounted, computed, reactive } from "vue";
 import Header from './header'
 import WidgetPanel from './widget_panel'
 import { Package } from "./package/index";
@@ -23,11 +22,87 @@ export default defineComponent({
 
     const {
       createWidget,
-      updateWidget,
-      delWidget
     } = useDesignPanel(designPanel)
 
-    const widgets = []
+    const service = reactive({
+      model: {
+        template: null
+      }
+    })
+
+    const widgets = computed(()=> service.model.template?.components)
+
+
+    setTimeout(()=>{
+      service.model.template = {
+        components: [
+          {
+            "id": "34o0epSH-e-SZyDFKHk6w",
+            "x": 10,
+            "y": 60.5,
+            "enableResize": true,
+            "enableDragable": true,
+            "tag": "TextField",
+            "name": "文本",
+            "width": 821,
+            "height": 75,
+            "margin": [
+              0
+            ],
+            "padding": [
+              0
+            ],
+            "state": 0,
+            "moveing": false,
+            "resizing": false,
+            "baseX": 10,
+            "baseY": 60.5,
+            "isOverlapping": false,
+            basicContentCrocessing: {
+              "title": {
+                "fontType": "黑体",
+                "fontSize": 14,
+                "rotation": 0,
+                "bolded": false,
+                "slanting": false,
+                "underline": false
+              },
+              "content": {
+                "fontType": "黑体",
+                "fontSize": 18,
+                "rotation": 0,
+                "bolded": false,
+                "slanting": false,
+                "underline": false
+              }
+            }
+          },
+          {
+            "id": "njLCpAAMgGWjb9WdCDsEu",
+            "x": 10,
+            "y": 225.5,
+            "enableResize": true,
+            "enableDragable": true,
+            "tag": "TextField",
+            "name": "文本",
+            "width": 821,
+            "height": 75,
+            "margin": [
+              0
+            ],
+            "padding": [
+              0
+            ],
+            "state": 1,
+            "moveing": false,
+            "resizing": false,
+            "baseX": 17,
+            "baseY": 225.5,
+            "isOverlapping": false
+          }
+        ]
+      }
+    }, 1000)
 
     function onDragEnd(widget){
       // console.log('onDragEnd', widget);
@@ -55,6 +130,7 @@ export default defineComponent({
         adsorbSpan={10}
         showRuler={true}
         pagePadding={[10]}
+        showDelBut={true}
         v-slots={{
           header: () => <Header />,
           left: () => <WidgetPanel onCreateWidget={(widget: Widget) => this.createWidget(widget)} />,
@@ -63,6 +139,8 @@ export default defineComponent({
             // <input style="width: 100%;box-sizing: border-box;"></input>
         }}
         onDrag-end={(widget) => this.onDragEnd(widget)}
+        onDelWidgets={(w)=>console.log('onDelWidgets',w)}
+        onSelectedChange={(ws)=>console.log('onSelectedChange',ws)}
         >
       </DesignPanel>
     )

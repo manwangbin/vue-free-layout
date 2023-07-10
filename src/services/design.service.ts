@@ -71,7 +71,8 @@ export default class DesignService {
   emitter = mitt<Record<string, any>>()
 
   constructor (props: any,
-               public emit: (event:'page-resized' | 'drag-start' | 'drag-moving' | 'drag-end', ...args: any)=>void,
+               public emit: (event:'page-resized' | 'drag-start' | 'drag-moving' |
+                 'drag-end' | 'selected-change' | 'del-widgets', ...args: any)=>void,
                slots: any) {
     provide(DesignService.token, this)
     provide(DesignService.itemSlot, slots.item)
@@ -81,8 +82,8 @@ export default class DesignService {
     this.utils = new UtilsService(this)
     this.stateMap = props.stateMap
 
-    let {value: widgets,width, height}: {
-      value: DesignWidget[],
+    let {value: widgets, width, height}: {
+      value: Widget[],
       width: number,
       height: number
     } = props
@@ -110,19 +111,7 @@ export default class DesignService {
       })
     }
 
-    if (widgets) {
-      let w = widgets.map(item =>
-        this.syncService.createWidget({
-          ...item,
-          state: 0,
-          moveing: false,
-          resizing: false,
-          baseX: item.x,
-          baseY: item.y,
-        }
-      ))
-      this.syncService.yWidget.push(w)
-    }
+    this.initWidgets(widgets)
 
     this.modal.canvaseRect.height = height + DesignService.SPAN * 2 / this.modal.scale
 
@@ -137,6 +126,26 @@ export default class DesignService {
         oldPadding: this.modal.pageRect.padding
       })
     })
+
+    watch(()=> props.value, ()=>this.initWidgets(props.value))
+  }
+
+  initWidgets(widgets: Array<Widget>) {
+    if (widgets) {
+      this.syncService.yWidget.delete(0, this.syncService.yWidget.length)
+      let w = widgets.map(item =>
+        this.syncService.createWidget({
+            ...item,
+            state: 0,
+            moveing: false,
+            resizing: false,
+            isOverlapping: false,
+            baseX: item.x,
+            baseY: item.y
+          }
+        ))
+      this.syncService.yWidget.push(w)
+    }
   }
 
   createWidgetHandler (widget: Widget) {
@@ -157,7 +166,6 @@ export default class DesignService {
         this.modal.newWidget = {
           ...this.selectedNewWidget, x: x, y: y, state: -1,
           moveing: false, resizing: false, baseX: x, baseY: y,
-          parent: 'root',
           isOverlapping: false
         }
         this.selectedNewOrgState = { ...this.modal.newWidget }
@@ -209,6 +217,7 @@ export default class DesignService {
       const yWidget = this.syncService.createWidget(widget)
       this.syncService.yWidget.push([yWidget])
       this.setSelected([yWidget])
+
       this.emitter.emit('onAddWidget', yWidget)
       this.emit('drag-end', widget)
     }
@@ -222,6 +231,7 @@ export default class DesignService {
   deleteWidget(id: string){
     const widgetIdx = this.syncService.yWidget.toArray().findIndex(item=>item.get('id') === id)
     if(widgetIdx===-1) return
+    const widget = this.syncService.yWidget.get(widgetIdx).toJSON()
     this.syncService.yWidget.delete(widgetIdx, 1)
     this.alignLineService?.delBoundaryLine(id)
   }
@@ -273,6 +283,7 @@ export default class DesignService {
     if (widget) {
       widget.set('state', 1)
       this.modal.selecteds.push(widget)
+      this.emit('selected-change', this.modal.selecteds.map(item=>item.toJSON()))
     }
   }
 
@@ -284,6 +295,7 @@ export default class DesignService {
         widgets[i].set('state', 1)
       }
       this.modal.selecteds.push(...widgets)
+      this.emit('selected-change', this.modal.selecteds.map(item=>item.toJSON()))
     }
   }
 
@@ -294,6 +306,7 @@ export default class DesignService {
       }
 
       this.modal.selecteds.splice(0, this.modal.selecteds.length)
+      this.emit('selected-change', [])
     }
   }
 
@@ -309,7 +322,7 @@ export default class DesignService {
     this.modal.pageRect.width = newWidth
     this.modal.pageRect.height = newHeight
     // 清空选中的widget
-    this.modal.selecteds = []
+    this.clearnSelected()
     // 重新设置内边距线
     this.alignLineService.setPaddingLine()
 
@@ -331,26 +344,9 @@ export default class DesignService {
     this.utils.recountPage()
   }
 
-  getWidgets(){
+  getPageWidgets(){
     // 通知各个组件格式好数据
     this.emitter.emit('formatWidget')
-    const widgets = this.modal.widgets.map(widget=>({
-      id: widget.id,
-      tag: widget.tag,
-      x: widget.x,
-      y: widget.y,
-      width: widget.width,
-      height: widget.height,
-      margin: widget.margin,
-      padding: widget.padding,
-      enableResize: widget.enableResize,
-      enableDragable: widget.enableDragable,
-      allowOverlap: widget.allowOverlap,
-      list: widget.list,
-      ...(this.stateMap.get(widget.id)?.getState()||{})
-    }))
-
-
-    return widgets
+    return this.modal.widgets;
   }
 }

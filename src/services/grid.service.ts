@@ -48,8 +48,7 @@ export default class GridService{
     this.model = reactive({
       gridRowGap: [],
       gridColGap: [],
-      gridItems: [],
-      gridWidgets: []
+      gridItems: []
     })
   }
 
@@ -109,17 +108,17 @@ export default class GridService{
       newWidgetList.push(widget)
     })
     const { yWidget } = this.service.utils.getYWidgetById(this.props.id)
-    yWidget.set('list', newWidgetList)
+    yWidget?.set('list', newWidgetList)
   }
 
   initGridWidgets(){
     const gridWidget = this.getGridWidget()
     if(!gridWidget.list) return
     for (const cWidget of gridWidget.list) {
-      const center = this.getCenterPoint(cWidget)
+      const center = this.getCenterPoint(<DesignWidget>cWidget)
       for (const gridItem of this.model.gridItems) {
         if(this.pointInArea(center, gridItem)){
-          gridItem.widget = cWidget
+          gridItem.widget = cWidget as DesignWidget
           gridItem.inGrid = true
           break
         }
@@ -172,6 +171,7 @@ export default class GridService{
 
   // 监听子组件被拖拽,将网格子组件设置为全局并选中
   onGridChildDragStart(event: MouseEvent, widget: DesignWidget){
+    this.setWidgetToGridChild()
     const { yWidget: gridYWidget } = this.service.utils.getYWidgetById(this.props.id)
     // 删除子组件并创建yWidget添加到全局
     const {x, y} = this.gridP2CanvasP(widget)
@@ -181,10 +181,10 @@ export default class GridService{
     })
     this.service.syncService.yWidget.push([yWidget])
     // 删除子组件
-    const list = gridYWidget.get('list') as Array<DesignWidget>
+    const list = gridYWidget?.get('list') as Array<DesignWidget>
     const idx = list?.findIndex(item=>item.id===widget.id)
     idx!==undefined && list?.splice(idx, 1)
-    gridYWidget.set('list', list)
+    gridYWidget?.set('list', list)
     // 删除gridWidgets
     for (const gridItem of this.model.gridItems) {
       if(gridItem.widget && gridItem.widget.id === widget.id){
@@ -194,6 +194,23 @@ export default class GridService{
     }
     const draggingService = new DraggingService(this.service, ()=>{})
     draggingService.mousedownHandler(event, yWidget)
+  }
+
+  onDelWidgets(widgets: Array<DesignWidget>){
+    widgets.forEach(widget=>{
+      const idx = this.model.gridItems.findIndex(item=>item.widget?.id === widget.id)
+      if(idx!==-1){
+        this.model.gridItems[idx].widget = null
+        this.model.gridItems[idx].inGrid = false
+      }
+      const { yWidget: gridYWidget } = this.service.utils.getYWidgetById(this.props.id)
+      const list: Array<DesignWidget> = gridYWidget?.get('list') || []
+      const cIdx = list.findIndex(item=>item.id === widget.id)
+      if(cIdx!==-1){
+        list.splice(cIdx, 1)
+        gridYWidget?.set('list', list)
+      }
+    })
   }
 
   // 将拖入网格的组件设置到对应网格位置
@@ -217,19 +234,17 @@ export default class GridService{
       if(!gridItem.widget || (gridItem.widget && gridItem.inGrid)) return
       gridItem.inGrid = true
       const { yWidget: gridYWidget } = this.service.utils.getYWidgetById(this.props.id)
-      const list: Array<DesignWidget> = gridYWidget.get('list') || []
+      const list: Array<DesignWidget> = gridYWidget?.get('list') || []
       gridItem.widget.x = gridItem.x
       gridItem.widget.y = gridItem.y
       gridItem.widget.width = gridItem.width - 1
       gridItem.widget.height = gridItem.height - 1
       gridItem.widget.state = 0
       list.push(gridItem.widget)
-      gridYWidget.set('list', list)
+      gridYWidget?.set('list', list)
       // 删除全局的yWidget
       this.service.deleteWidget(gridItem.widget.id)
       this.activeWidget = null
-      // 删除对齐线
-      this.service.alignLineService.delBoundaryLine(gridItem.widget.id)
     })
   }
 

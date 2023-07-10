@@ -49,6 +49,12 @@ export default defineComponent({
     children: {
       type: Array as PropType<Array<Widget>>,
       default: () => []
+    },
+
+    // 是否显示删除按钮
+    showDelBut: {
+      type: Boolean,
+      default: false
     }
   },
 
@@ -162,8 +168,7 @@ export default defineComponent({
           renderSizeBorders(),
           renderSelectedArea(),
           renderAlignmentLine(),
-          // renderOperationBar(),
-          // JSON.stringify(designService.modal.selecteds.map(i=>i.toJSON()))
+          renderOperationBar(),
         ]
       )
     }
@@ -173,6 +178,7 @@ export default defineComponent({
         return designService.modal.widgets.map((widget, idx) => h(
           DragContainer,
           {
+            key: widget.id,
             value: widget,
             widgetIdx: idx,
             onDragMoving: (widget: DesignWidget) => emit('drag-moving', widget),
@@ -242,6 +248,7 @@ export default defineComponent({
 
     // 操作栏
     const renderOperationBar = () => {
+      if(!props.showDelBut) return
       if(!designService.modal.selecteds || designService.modal.selecteds.length === 0) return
       return h(OperationBar)
     }

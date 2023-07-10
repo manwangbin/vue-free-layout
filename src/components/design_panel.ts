@@ -97,17 +97,23 @@ export default defineComponent({
       type: Number,
       default: 10
     },
+
     // 页面内边距
     pagePadding: {
       type: Array,
       default: [10]
     },
 
+    // 是否显示删除按钮
+    showDelBut: {
+      type: Boolean,
+      default: false
+    }
   },
 
   emits: ['update:value', 'page-resized', 'added', 'deleted', 'drag-start',
     'drag-moving', 'drag-end', 'resize-start', 'resizeing', 'resize-end',
-    'del-widgets'
+    'del-widgets', 'selected-change'
   ],
   setup (props, { emit, slots }) {
 
@@ -134,7 +140,7 @@ export default defineComponent({
      * @returns
      */
     const getPageWidgets = (): Array<DesignWidget> => {
-      return service.modal.widgets;
+      return service.getPageWidgets()
     }
 
     onMounted(() => {

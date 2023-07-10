@@ -1,7 +1,10 @@
 import { computed, defineComponent, h, inject } from "vue";
 import DesignService from "@/services/design.service";
+import { DesignWidget } from "@/types";
 
-const HEIGHR = 25
+const HEIGHR = 28
+
+const WIDTH = 35
 
 export default defineComponent({
   setup(){
@@ -30,9 +33,14 @@ export default defineComponent({
     })
 
     function deleteWidget(){
+      const delWidgets: Array<DesignWidget> = []
       designService.modal.selecteds.forEach((yWidget)=>{
+        delWidgets.push(yWidget.toJSON() as DesignWidget)
         designService.deleteWidget(yWidget.get('id'))
       })
+
+      designService.emitter.emit('delWidgets', delWidgets)
+      designService.emit('del-widgets', delWidgets)
       designService.modal.selecteds = []
     }
 
@@ -49,9 +57,9 @@ export default defineComponent({
       {
         class: 'operation-bar',
         style: {
-          top: this.position.y - HEIGHR + 'px',
-          left: this.position.x + 'px',
-          width: this.position.width + 'px',
+          top: this.position.y + 2 + 'px',
+          left: this.position.x + this.position.width - WIDTH - 2 + 'px',
+          width: WIDTH + 'px',
           height: HEIGHR + 'px'
         },
         onmousedown: (event: MouseEvent)=>{
@@ -64,11 +72,10 @@ export default defineComponent({
           'div',
           {
             class: 'del-icon',
-            innerHTML: `<svg t="1683510918742" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2402" width="16" height="16" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M214.6048 298.666667v598.613333a41.429333 41.429333 0 0 0 41.386667 41.386667h513.28c22.869333 0 41.386667-18.56 41.386666-41.386667V298.666667h-596.053333z m554.666667 725.333333h-513.28c-69.845333 0-126.72-56.832-126.72-126.72V213.333333h766.72v683.946667c0 69.888-56.832 126.72-126.72 126.72z" fill="#f44d50" p-id="2403"></path><path d="M981.333333 298.666667H42.666667c-23.466667 0-42.666667-19.2-42.666667-42.666667s19.2-42.666667 42.666667-42.666667h938.666666c23.466667 0 42.666667 19.2 42.666667 42.666667s-19.2 42.666667-42.666667 42.666667M768 213.333333H682.666667V128c0-23.509333-19.114667-42.666667-42.666667-42.666667H384c-23.509333 0-42.666667 19.157333-42.666667 42.666667v85.333333H256V128c0-70.570667 57.429333-128 128-128h256c70.570667 0 128 57.429333 128 128v85.333333zM384 810.666667c-23.466667 0-42.666667-19.2-42.666667-42.666667V469.333333c0-23.466667 19.2-42.666667 42.666667-42.666666s42.666667 19.2 42.666667 42.666666v298.666667c0 23.466667-19.2 42.666667-42.666667 42.666667M640 810.666667c-23.466667 0-42.666667-19.2-42.666667-42.666667V469.333333c0-23.466667 19.2-42.666667 42.666667-42.666666s42.666667 19.2 42.666667 42.666666v298.666667c0 23.466667-19.2 42.666667-42.666667 42.666667" fill="#f44d50" p-id="2404"></path></svg>`,
+            innerHTML: `<svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false"><path d="M695.96 953.65h-367.3c-76.07 0-137.74-61.67-137.74-137.74V293.63H833.7v522.28c0 76.07-61.67 137.74-137.74 137.74zM626.6 186.44H398.02c0-63.12 51.17-114.29 114.29-114.29S626.6 123.32 626.6 186.44z" data-spm-anchor-id="a313x.7781069.0.i29"></path><path d="M833.7 243.09H188.97c-19.02 0-34.43-15.42-34.43-34.43s15.41-34.43 34.43-34.43H833.7c19.02 0 34.43 15.42 34.43 34.43s-15.41 34.43-34.43 34.43z" data-spm-anchor-id="a313x.7781069.0.i30"></path><path d="M511.33 813.52c-19.02 0-34.43-15.42-34.43-34.43V466.61c0-19.02 15.42-34.43 34.43-34.43s34.43 15.42 34.43 34.43v312.48c.01 19.01-15.41 34.43-34.43 34.43zm-157.27 1.59c-19.02 0-34.43-15.42-34.43-34.43V586.03c0-19.02 15.42-34.43 34.43-34.43s34.43 15.42 34.43 34.43v194.64c.01 19.02-15.41 34.44-34.43 34.44zm314.54 0c-19.02 0-34.43-15.42-34.43-34.43V586.03c0-19.02 15.42-34.43 34.43-34.43s34.43 15.42 34.43 34.43v194.64c.01 19.02-15.41 34.44-34.43 34.44z" data-spm-anchor-id="a313x.7781069.0.i28"></path></svg>`,
             onClick: () => this.deleteWidget()
           }
         ),
-        this.designService.modal.selecteds.length + ''
       ]
     )
   }

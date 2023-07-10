@@ -325,7 +325,6 @@ export default class AlignmentLineService {
     if(minTop!==null){
       // 吸附到这条线
       selecteds.forEach(yWidget=>{
-        if(yWidget.get('parent')!=='root') return
         // 离线的距离 = 边界位置 - 线的位置
         const offset = boundary.top - minTop.line.y
         // 渲染位置 = 鼠标位置 - 离线的距离
@@ -336,7 +335,6 @@ export default class AlignmentLineService {
     if(minBottom!==null){
       // 吸附到这条线
       selecteds.forEach(yWidget=>{
-        if(yWidget.get('parent')!=='root') return
         // 离线的距离 = 边界位置 - 线的位置
         const offset = boundary.bottom - minBottom.line.y
         // 渲染位置 = 鼠标位置 - 离线的距离
@@ -347,7 +345,6 @@ export default class AlignmentLineService {
     if(minLeft!==null){
       // 吸附到这条线
       selecteds.forEach(yWidget=>{
-        if(yWidget.get('parent')!=='root') return
         // 离线的距离 = 边界位置 - 线的位置
         const offset = boundary.left - minLeft.line.x
         // 渲染位置 = 鼠标位置 - 离线的距离
@@ -358,7 +355,6 @@ export default class AlignmentLineService {
     if(minRight!==null){
       // 吸附到这条线
       selecteds.forEach(yWidget=>{
-        if(yWidget.get('parent')!=='root') return
         // 离线的距离 = 边界位置 - 线的位置
         const offset = boundary.right - minRight.line.x
         // 渲染位置 = 鼠标位置 - 离线的距离
@@ -454,11 +450,7 @@ export default class AlignmentLineService {
       if(CheckType.isArray(updateData.deltaData?.insert)){
         updateData.deltaData?.insert.forEach(item=>{
           if(item instanceof Y.Map){
-            if(item.get('parent')==='root'){
-              this.addBoundaryLine(item.toJSON() as DesignWidget)
-            }else{
-              this.delBoundaryLine(item.get('id'))
-            }
+            this.addBoundaryLine(item.toJSON() as DesignWidget)
           }
         })
       }
@@ -468,11 +460,7 @@ export default class AlignmentLineService {
         this.delBoundaryLine(updateData.target.get('id'))
       }else if(updateData.target.get('moveing') === false || updateData.target.get('resizing') === false){
         // 停止移动或停止改变大小新增线
-        if(updateData.target.get('parent')==='root') {
-          this.addBoundaryLine(updateData.target.toJSON())
-        }else{
-          this.delBoundaryLine(updateData.target.get('id'))
-        }
+        this.addBoundaryLine(updateData.target.toJSON())
         this.hideAllLine()
       }
     }

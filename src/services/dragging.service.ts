@@ -133,7 +133,6 @@ export default class DraggingService {
         yWidget.set('y', copyWidget.y)
         yWidget.set('baseX', copyWidget.baseX)
         yWidget.set('baseY', copyWidget.baseY)
-        yWidget.set('parent', copyWidget.parent)
         yWidget.set('isOverlapping', false)
       }
       this.emit('drag-end', yWidget.toJSON())

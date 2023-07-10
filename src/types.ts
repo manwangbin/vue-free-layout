@@ -1,4 +1,5 @@
 import DesignService from "@/services/design.service";
+import { Ref } from "vue";
 
 export interface Point {
   // 横坐标（组件渲染时的坐标）
@@ -17,17 +18,17 @@ export interface Widget extends Point {
   // 高度
   height: number;
   // margin
-  margin: Array<number>;
+  margin: [number, number, number, number];
   // padding
-  padding: Array<number>;
+  padding: [number, number, number, number];
   // 是否可以改变大小
   enableResize: boolean;
   // 是否运行拖动
   enableDragable: boolean;
   // 是否允许重叠 enable
-  allowOverlap: boolean,
+  enableOverlap: boolean,
   // components
-  list?: Array<Omit<DesignWidget, 'list'>>
+  list?: Array<Omit<Widget, 'list'>>
 }
 
 export interface DesignWidget extends Widget{
@@ -41,8 +42,6 @@ export interface DesignWidget extends Widget{
   baseX: number;
   // 基础纵坐标
   baseY: number;
-  // 父节点
-  parent: string|undefined;
   // 是否重叠了
   isOverlapping: boolean
 }

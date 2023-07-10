@@ -21,12 +21,11 @@ export function useDesignPanel(designPanel?: Ref<DesignPanelRef|null>){
   function createWidget(widget: Widget){
 
     service.value?.createWidgetHandler(widget)
+
   }
 
-  function getWidgets(){
-    const widgets = service.value?.getWidgets()
-    console.log('getWidgets',widgets);
-    return widgets
+  function getPageWidgets(){
+    return service.value?.getPageWidgets()
   }
 
   function getYWidgets(){
@@ -80,7 +79,6 @@ export function useDesignPanel(designPanel?: Ref<DesignPanelRef|null>){
   }
 
   function changePageSize(width: number, height: number){
-    console.log(width, height);
     service.value?.resizePage({
       newWidth: Number(width),
       newHeight: Number(height),
@@ -129,7 +127,7 @@ export function useDesignPanel(designPanel?: Ref<DesignPanelRef|null>){
     getPageRect,
     onLayout,
     createWidget,
-    getWidgets,
+    getPageWidgets,
     getYWidgets,
     updateWidget,
     delWidget,

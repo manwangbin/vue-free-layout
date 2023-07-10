@@ -1,7 +1,7 @@
 import { defineComponent } from "vue";
 import { nanoid } from 'nanoid'
 import { Widget } from "@/types";
-import { useDesignPanel } from "../src/hooks/useDesignPanel";
+import { useDesignPanel } from "../src";
 // import { useDesignPanel } from "../dist/vue3-free-layout.esm";
 import { FieldEnum, widgets } from "./package";
 

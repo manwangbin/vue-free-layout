@@ -63,10 +63,11 @@ export default defineComponent({
     const onAddWidget = gridService.onAddWidget.bind(gridService)
     const setWidgetToGridChild = gridService.setWidgetToGridChild.bind(gridService)
     const onMousedown = gridService.onMousedown.bind(gridService)
+    const onDelWidgets = gridService.onDelWidgets.bind(gridService)
 
     function formatWidget(){
       gridService.setWidgetToGridChild()
-      service.modal.selecteds = []
+      service.clearnSelected()
     }
 
     // 监听widget拖动
@@ -74,6 +75,7 @@ export default defineComponent({
     service.emitter.on('onMousedown', onMousedown)
     service.emitter.on('onBGMousedown', setWidgetToGridChild)
     service.emitter.on('onCreateWidget',setWidgetToGridChild)
+    service.emitter.on('delWidgets', onDelWidgets)
     service.emitter.on('formatWidget',formatWidget)
 
     service.isNotOverlapInGridPublisher.on(setNotOverlapInGrid)
@@ -82,7 +84,8 @@ export default defineComponent({
       service.emitter.off('onAddWidget', onAddWidget)
       service.emitter.off('onMousedown', onMousedown)
       service.emitter.off('onBGMousedown', setWidgetToGridChild)
-      service.emitter.off('createWidget', setWidgetToGridChild)
+      service.emitter.off('onCreateWidget', setWidgetToGridChild)
+      service.emitter.off('delWidgets', onDelWidgets)
       service.emitter.off('formatWidget',formatWidget)
       service.isNotOverlapInGridPublisher.off(setNotOverlapInGrid)
     })
@@ -141,16 +144,19 @@ export default defineComponent({
     function renderGridWidgets(){
       if(!gridWidget.list) return null
       return gridWidget.list.map(widget=>
+        // @ts-ignore
         h(DragContainer,
         {
+          key: widget.id,
+          value: widget,
           style: {
             zIndex: 1600
           },
-          value: widget,
-          onDragStart: gridService.onGridChildDragStart.bind(gridService)
+          onDragStart: gridService.onGridChildDragStart.bind(gridService),
+          onDelWidgets: (widget: Array<DesignWidget>) => gridService.onDelWidgets(widget)
         },
         {
-          default: () => [itemSlot && itemSlot(widget)]
+          default: () => [itemSlot && itemSlot(<DesignWidget>widget)]
         }
       ))
     }

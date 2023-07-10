@@ -46,7 +46,7 @@
 import { Package } from "./package/index";
 import Select from "./components/Select/index.vue";
 import RadioButton from "./components/RadioButton/index.vue";
-import { useDesignPanel } from "../src/hooks/useDesignPanel";
+import { useDesignPanel } from "../src";
 // import { useDesignPanel } from "../dist/vue3-free-layout.esm";
 import { computed, reactive } from "vue";
 import { pagePadding, layoutOpt, pageSize } from "./package/utils/options";
@@ -62,17 +62,20 @@ const {
   print,
   changePageSize,
   setPadding,
-  getWidgets
+  getPageWidgets
 } = useDesignPanel()
+
+function getWidgets(){
+  console.log('getPageWidgets()',getPageWidgets());
+}
 
 const selecteds = computed(()=>designModal.value.selecteds)
 
 const widget = computed(()=>{
-  const rootSelected = selecteds.value.filter(item=>item.get('parent'))
   if(selecteds.value.length===1){
     return selecteds.value[0].toJSON()
-  }else if(rootSelected.length > 1){
-    return rootSelected[0].toJSON()
+  }else if(selecteds.value.length > 1){
+    return selecteds.value[0].toJSON()
   }else{
     return null
   }
@@ -84,12 +87,12 @@ const model = reactive({
 })
 
 
-function layoutChange(opt){
-  designModal.value.selecteds.forEach(item=>{
-    const id = item.get('id') as string
-    setDirection(id, opt.value)
-  })
-}
+// function layoutChange(opt){
+//   designModal.value.selecteds.forEach(item=>{
+//     const id = item.get('id') as string
+//     setDirection(id, opt.value)
+//   })
+// }
 
 function pageSizeChange(val){
   changePageSize.apply(null, val.split(','))
