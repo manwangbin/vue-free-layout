@@ -17,10 +17,6 @@ export default defineComponent({
       type: Array as PropType<Array<Widget>>,
       default: () => new Array()
     },
-    stateMap: {
-      type: Map,
-      required: true
-    },
     width: {
       type: Number,
       required: true

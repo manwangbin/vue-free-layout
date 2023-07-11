@@ -38,8 +38,6 @@ export default class DesignService {
 
   drawerRef: Ref<HTMLElement | null> = ref(null)
 
-  stateMap: Map<string, FieldInterface>;
-
   selectedNewWidget?: Widget;
 
   selectedMousePoint?: Point;
@@ -80,7 +78,6 @@ export default class DesignService {
     this.syncService = new SynchronizeService()
     this.alignLineService = new AlignmentLineService(props, this)
     this.utils = new UtilsService(this)
-    this.stateMap = props.stateMap
 
     let {value: widgets, width, height}: {
       value: Widget[],
@@ -133,6 +130,11 @@ export default class DesignService {
   initWidgets(widgets: Array<Widget>) {
     if (widgets) {
       this.syncService.yWidget.delete(0, this.syncService.yWidget.length)
+      this.modal.selecteds = []
+      this.alignLineService.clearAllLine()
+      this.alignLineService.setPaddingLine()
+
+      this.alignLineService
       let w = widgets.map(item =>
         this.syncService.createWidget({
             ...item,

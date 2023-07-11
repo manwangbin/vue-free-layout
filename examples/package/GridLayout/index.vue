@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import GridWidget from "@/components/grid_widget.ts";
+import { GridWidget } from "@/index";
 import { GridLayoutService } from "./GridLayoutService";
 import { useStateMap } from "../hooks";
 import { useAttrs } from "vue";

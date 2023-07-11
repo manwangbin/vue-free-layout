@@ -27,8 +27,9 @@ export interface Widget extends Point {
   enableDragable: boolean;
   // 是否允许重叠 enable
   enableOverlap: boolean,
+  levels: number,
   // components
-  list?: Array<Omit<Widget, 'list'>>
+  components?: Array<Omit<Widget, 'components'>>
 }
 
 export interface DesignWidget extends Widget{

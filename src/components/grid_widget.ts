@@ -3,7 +3,6 @@ import DesignService from "@/services/design.service";
 import GridService, { Props } from "@/services/grid.service";
 import DragContainer from "../components/drag_container";
 import { DesignWidget } from "@/types";
-import DraggingService from "@/services/dragging.service";
 
 export default defineComponent({
   name: 'GridWidget',
@@ -20,6 +19,10 @@ export default defineComponent({
     colSpan: {
       type: String,
       default: '3'
+    },
+    components: {
+      type: Array,
+      default: () => []
     }
   },
   setup(props){
@@ -39,7 +42,7 @@ export default defineComponent({
       ()=>props.colSpan
     ], ([rowSpan, colSpan])=>{
       gridService.setGridGap(rowSpan, colSpan, gridWidget.width, gridWidget.height)
-      if(gridWidget.list?.length!==0){
+      if(gridWidget.components?.length!==0){
         gridService.resetGridWidgets()
       }
     })
@@ -50,7 +53,7 @@ export default defineComponent({
       ()=>gridWidget.height
     ], ([width, height])=>{
       gridService.setGridGap(props.rowSpan, props.colSpan, width, height)
-      if(gridWidget.list?.length!==0){
+      if(gridWidget.components?.length!==0){
         gridService.resetGridWidgets()
       }
     })
@@ -99,7 +102,7 @@ export default defineComponent({
               top: item.y + 'px',
               left: 0,
               height: 0,
-              width: (item.width-2)+'px',
+              width: item.width + 'px',
               borderBottom: '1px dashed rgb(201, 201, 201)'
             }
           }
@@ -113,7 +116,7 @@ export default defineComponent({
               position: 'absolute',
               left: item.x + 'px',
               top: 0,
-              height: (item.height-2)+'px',
+              height: item.height + 'px',
               width: 0,
               borderLeft: '1px dashed rgb(201, 201, 201)'
             }
@@ -142,8 +145,8 @@ export default defineComponent({
       )
     }
     function renderGridWidgets(){
-      if(!gridWidget.list) return null
-      return gridWidget.list.map(widget=>
+      if(!gridWidget.components) return null
+      return gridWidget.components.map(widget=>
         // @ts-ignore
         h(DragContainer,
         {
@@ -184,7 +187,7 @@ export default defineComponent({
         this.renderGridItems(),
         this.renderGridRowGap(),
         this.renderGridColGap(),
-        // h('div',{},[JSON.stringify(this.gridWidget.list)])
+        // h('div',{},[JSON.stringify(this.gridWidget.components)])
       ]
     )
   }

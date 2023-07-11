@@ -104,6 +104,11 @@ export default defineComponent({
       }
     }, 1000)
 
+
+    setTimeout(()=>{
+      service.model.template = null
+    },3000)
+
     function onDragEnd(widget){
       // console.log('onDragEnd', widget);
       // widget.x = 10

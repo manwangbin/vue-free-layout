@@ -182,7 +182,6 @@ export default class AlignmentLineService {
         }
       }
     })
-
     minRow && adsorbHandler(minRow.place, minRow.line, minRow.boundary)
     minCol && adsorbHandler(minCol.place, minCol.line, minCol.boundary)
   }
@@ -435,6 +434,11 @@ export default class AlignmentLineService {
     idx!==-1&&this.boundaryLine.splice(idx,1)
     idx = this.boundaryLine.findIndex(item=>item.id === id+'-right')
     idx!==-1&&this.boundaryLine.splice(idx,1)
+  }
+
+  // 删除所有线
+  clearAllLine(){
+    this.boundaryLine.length = 0
   }
 
   // 隐藏所有线

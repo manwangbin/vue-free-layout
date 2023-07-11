@@ -1,4 +1,3 @@
-import { FieldInterface } from "../utils/FieldInterface";
 import { FieldService } from "../utils/FieldService";
 
 export const widgetOpt = {
@@ -11,6 +10,7 @@ export const widgetOpt = {
   height: 300,
   margin: [0],
   padding: [0],
+  levels: 0,
   enableOverlap: true
 }
 

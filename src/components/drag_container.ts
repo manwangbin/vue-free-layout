@@ -103,7 +103,8 @@ export default defineComponent({
       container, containerClass, renderCover,
       cssTransform, service,
       state: props.value.state,
-      tag: props.value.tag
+      tag: props.value.tag,
+      levels: props.value.levels
     }
   },
 
@@ -118,12 +119,14 @@ export default defineComponent({
           width: this.$props.value.width + 'px',
           height: this.$props.value.height + 'px',
           borderRadius: this.$props.radius + 'px',
-          zIndex: this.state===-1 ? 2000:this.tag==='GridLayout'?0:10
+          // 转成string，防止 levels为0 时 结果为false
+          zIndex: this.state===-1 ? 2000: String(this.levels) || 10
         }
       },
       [
         this.$slots.default && this.$slots.default(),
         this.renderCover(),
+        // this.levels
         // this.$props.value.id, h('div'),
         // this.$props.value.x, '-', this.$props.value.y, h('div'),
         // 'state    ', this.$props.value.state, h('div'),
