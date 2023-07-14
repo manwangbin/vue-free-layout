@@ -1,7 +1,7 @@
 import DesignService from '../services/design.service'
 import DraggingService from '../services/dragging.service'
 import { DesignWidget } from '../types'
-import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, PropType, Ref, ref } from "vue";
+import { computed, defineComponent, h, inject, onMounted, PropType, Ref, ref } from "vue";
 
 export default defineComponent({
   name: 'DragContainer',
@@ -25,8 +25,10 @@ export default defineComponent({
     },
   },
 
-  emits: ['drag-start', 'drag-moving', 'drag-end', 'state-changed', 'del-widgets'],
+  emits: ['drag-start', 'drag-moving', 'drag-end', 'state-changed'],
   setup (props, { emit }) {
+    const itemSlot = inject(DesignService.itemSlot)
+
     const container: Ref<HTMLElement | undefined> = ref()
     onMounted(() => {
       if (container.value) {
@@ -101,7 +103,7 @@ export default defineComponent({
 
     return {
       container, containerClass, renderCover,
-      cssTransform, service,
+      cssTransform, service, itemSlot,
       state: props.value.state,
       tag: props.value.tag,
       levels: props.value.levels
@@ -110,7 +112,7 @@ export default defineComponent({
 
   render() {
     return h(
-      'div',
+      "div",
       {
         ref: 'container',
         class: this.containerClass,
@@ -124,7 +126,8 @@ export default defineComponent({
         }
       },
       [
-        this.$slots.default && this.$slots.default(),
+        this.itemSlot && this.itemSlot(this.$props.value),
+        // this.$slots.default && this.$slots.default("hahah"),
         this.renderCover(),
         // this.levels
         // this.$props.value.id, h('div'),

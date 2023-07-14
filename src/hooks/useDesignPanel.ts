@@ -78,29 +78,21 @@ export function useDesignPanel(designPanel?: Ref<DesignPanelRef|null>){
     service.value?.alignLineService.columnBetween()
   }
 
-  function changePageSize(width: number, height: number){
-    service.value?.resizePage({
-      newWidth: Number(width),
-      newHeight: Number(height),
-      oldWidth: designModal.value.pageRect.width,
-      oldHeight: designModal.value.pageRect.height,
-      newPadding: designModal.value.pageRect.padding,
-      oldPadding: designModal.value.pageRect.padding
-    })
-  }
-
-  function setPadding(padding: number[]){
-    if(!service.value) return
-    const [top, right, bottom, left] = designModal.value.pageRect.padding
-    service.value.modal.pageRect.padding = service.value?.utils.paddingFormat(padding)
-    service.value.resizePage({
-      newWidth: designModal.value.pageRect.width,
-      newHeight: designModal.value.pageRect.height,
-      oldWidth: designModal.value.pageRect.width,
-      oldHeight: designModal.value.pageRect.height,
-      newPadding: designModal.value.pageRect.padding,
-      oldPadding: [top, right, bottom, left]
-    })
+  function changePageSize(width?: number, height?: number, padding?: [number,number,number,number]){
+    const pageRect = designModal.value.pageRect
+    service.value?.changePageSize(
+      width || pageRect.width,
+      height || pageRect.height,
+      padding || pageRect.padding
+    )
+    // service.value?.resizePage({
+    //   newWidth: Number(width),
+    //   newHeight: Number(height),
+    //   oldWidth: designModal.value.pageRect.width,
+    //   oldHeight: designModal.value.pageRect.height,
+    //   newPadding: designModal.value.pageRect.padding,
+    //   oldPadding: designModal.value.pageRect.padding
+    // })
   }
 
   function print(){
@@ -138,7 +130,6 @@ export function useDesignPanel(designPanel?: Ref<DesignPanelRef|null>){
     rowBetween,
     columnBetween,
     print,
-    changePageSize,
-    setPadding
+    changePageSize
   }
 }

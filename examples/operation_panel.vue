@@ -61,7 +61,6 @@ const {
   columnBetween,
   print,
   changePageSize,
-  setPadding,
   getPageWidgets
 } = useDesignPanel()
 
@@ -100,7 +99,6 @@ function pageSizeChange(val){
 
 function pagePaddingChange(val){
   if(val){
-    setPadding([Number(val)])
   }
 }
 

@@ -33,6 +33,17 @@ export function printHTML({domId,width,height}: Option){
       padding: 0;
       margin:0;
     }
+    // @media print {
+    //   @page {
+    //     size:  21cm 29.7cm;
+    //     margin: 0;
+    //     padding: 0;
+    //   }
+    //
+    //   .noprint {
+    //     display: none;
+    //   }
+    // }
     #drawer{
       position: relative;
       overflow: hidden;

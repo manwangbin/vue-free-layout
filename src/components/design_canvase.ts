@@ -184,9 +184,6 @@ export default defineComponent({
             onDragMoving: (widget: DesignWidget) => emit('drag-moving', widget),
             onDragStart: (widget: DesignWidget) => emit('drag-start', widget),
             onDragEnd: (widget: DesignWidget) => emit('drag-end', widget)
-          },
-          {
-            default: () => [slots.item && slots.item(widget)]
           }
         ))
       }

@@ -6,7 +6,6 @@ import SynchronizeService, { YWidget } from "@/services/synchronize.service";
 import mitt from 'mitt'
 import UtilsService from "@/services/utils.service";
 import { Publisher } from "@/utils/publisher";
-import { FieldInterface } from "@/package/utils/FieldInterface";
 
 export interface Modal {
   newWidget?: DesignWidget;
@@ -32,7 +31,7 @@ export interface Modal {
 
 export default class DesignService {
   static token:InjectionKey<DesignService> = Symbol('DesignService');
-  static itemSlot: InjectionKey<(widget: DesignWidget)=>Component> = Symbol()
+  static itemSlot: InjectionKey<(widget: DesignWidget, )=>Component> = Symbol()
 
   static SPAN = 40
 
@@ -70,7 +69,8 @@ export default class DesignService {
 
   constructor (props: any,
                public emit: (event:'page-resized' | 'drag-start' | 'drag-moving' |
-                 'drag-end' | 'selected-change' | 'del-widgets', ...args: any)=>void,
+               'drag-end' | 'selected-change' | 'deleted' | 'addNewWidget' | 'delNewWidget',
+               ...args: any)=>void,
                slots: any) {
     provide(DesignService.token, this)
     provide(DesignService.itemSlot, slots.item)
@@ -113,15 +113,10 @@ export default class DesignService {
     this.modal.canvaseRect.height = height + DesignService.SPAN * 2 / this.modal.scale
 
     // 监听页面宽高修改
-    watch([()=>props.width, ()=>props.height], (newVal, oldVal)=>{
-      this.resizePage({
-        newWidth: newVal[0],
-        newHeight: newVal[1],
-        oldWidth: oldVal[0],
-        oldHeight: oldVal[1],
-        newPadding: this.modal.pageRect.padding,
-        oldPadding: this.modal.pageRect.padding
-      })
+    watch([()=>props.width, ()=>props.height, () => props.pagePadding], (newVal, oldVal)=>{
+      console.log("监听页面宽高修改", props.width, props.height, props.pagePadding);
+      console.log("监听页面宽高修改22", newVal, oldVal);
+      this.changePageSize(props.width, props.height, props.pagePadding)
     })
 
     watch(()=> props.value, ()=>this.initWidgets(props.value))
@@ -134,7 +129,6 @@ export default class DesignService {
       this.alignLineService.clearAllLine()
       this.alignLineService.setPaddingLine()
 
-      this.alignLineService
       let w = widgets.map(item =>
         this.syncService.createWidget({
             ...item,
@@ -171,6 +165,7 @@ export default class DesignService {
           isOverlapping: false
         }
         this.selectedNewOrgState = { ...this.modal.newWidget }
+        this.emit('addNewWidget', this.modal.newWidget)
       }
     } else if (this.selectedMousePoint && this.selectedNewOrgState) {
       const hspan = event.clientX - this.selectedMousePoint.x
@@ -222,6 +217,8 @@ export default class DesignService {
 
       this.emitter.emit('onAddWidget', yWidget)
       this.emit('drag-end', widget)
+    }else {
+      this.emit("delNewWidget", this.modal.newWidget)
     }
 
     this.modal.newWidget = undefined
@@ -320,30 +317,44 @@ export default class DesignService {
   }
 
   // 修改页面尺寸内边距
-  resizePage({newWidth,newHeight,oldWidth,oldHeight,newPadding,oldPadding}: Record<string, any>){
-    this.modal.pageRect.width = newWidth
-    this.modal.pageRect.height = newHeight
+  changePageSize(width: number, height: number, padding: [number, number, number, number]) {
     // 清空选中的widget
     this.clearnSelected()
+    const pageRect = this.modal.pageRect
+    // 修改宽度时所有子组件宽度改变
+    if(pageRect.width !== width || pageRect.padding[1] !== padding[1] || pageRect.padding[3] !== padding[3]){
+      const [oTop, oRight, oBottom, oLeft] = pageRect.padding
+      const [nTop, nRight, nBottom, nLeft] = padding
+      const newWidth = width - nLeft - nRight
+      const oldWidth = pageRect.width - oLeft - oRight
+      // 计算宽度新增了百分之几
+      const widthRatio = (newWidth - oldWidth) / oldWidth
+      this.syncService.yWidget.forEach(yWidget=>{
+        const yWidth = yWidget.get('width') as number
+        const x = yWidget.get('x') as number
+        yWidget.set('width', yWidth + (yWidth * widthRatio))
+        yWidget.set('x', (x + ((x + nLeft - oLeft) - nLeft) * widthRatio) + nLeft - oLeft)
+      })
+    }
+    // 修改高度时只改变页面高度
+    if(pageRect.height !== height) {}
+    // 修改上边距时所有组件 x 下移
+    if(pageRect.padding[0] !== padding[0]){
+      const oTop = pageRect.padding[0]
+      const nTop = padding[0]
+      this.syncService.yWidget.forEach(yWidget=>{
+        const y = yWidget.get('y') as number
+        yWidget.set('y', (y + (nTop - oTop)));
+      })
+    }
+
+    this.modal.pageRect.width = width
+    this.modal.pageRect.height = height
+    this.modal.pageRect.padding = padding
     // 重新设置内边距线
     this.alignLineService.setPaddingLine()
-
-    const [nTop, nRight, nBottom, nLeft] = newPadding
-    const [oTop, oRight, oBottom, oLeft] = oldPadding
-    newWidth -= (nLeft+nRight)
-    oldWidth -= (oLeft+oRight)
-    // 计算宽度新增了百分之几
-    const widthRatio = (newWidth - oldWidth) / oldWidth
-    const heightRatio = (newHeight - oldHeight) / oldHeight
-    this.syncService.yWidget.forEach(yWidget=>{
-      const yWidth = yWidget.get('width') as number
-      const x = yWidget.get('x') as number
-      const y = yWidget.get('y') as number
-      yWidget.set('width', yWidth + (yWidth * widthRatio))
-      yWidget.set('x', (x + (x - nLeft) * widthRatio) + (nLeft - oLeft))
-      yWidget.set('y', (y + (y - nTop) * heightRatio) + (nTop - oTop))
-    })
     this.utils.recountPage()
+
   }
 
   getPageWidgets(){

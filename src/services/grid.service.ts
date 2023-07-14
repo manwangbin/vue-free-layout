@@ -113,8 +113,8 @@ export default class GridService{
 
   initGridWidgets(){
     const gridWidget = this.getGridWidget()
-    if(!gridWidget.list) return
-    for (const cWidget of gridWidget.list) {
+    if(!gridWidget.components) return
+    for (const cWidget of gridWidget.components) {
       const center = this.getCenterPoint(<DesignWidget>cWidget)
       for (const gridItem of this.model.gridItems) {
         if(this.pointInArea(center, gridItem)){

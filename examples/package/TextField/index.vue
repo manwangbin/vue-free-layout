@@ -18,11 +18,14 @@
 <script setup lang="ts">
 import { TextFieldService } from "./TextFieldService";
 import { computed, useAttrs } from "vue";
-import { useStateMap } from "../hooks";
+import { stateMap, useStateMap } from "../hooks";
 
 const props = defineProps<{
   id: string,
 }>()
+
+console.log('tttttttt', stateMap.get('666'));
+
 
 const attrs = useAttrs()
 

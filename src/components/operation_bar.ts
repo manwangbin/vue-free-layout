@@ -40,7 +40,7 @@ export default defineComponent({
       })
 
       designService.emitter.emit('delWidgets', delWidgets)
-      designService.emit('del-widgets', delWidgets)
+      designService.emit('deleted', delWidgets)
       designService.modal.selecteds = []
     }
 

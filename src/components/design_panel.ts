@@ -109,7 +109,7 @@ export default defineComponent({
 
   emits: ['update:value', 'page-resized', 'added', 'deleted', 'drag-start',
     'drag-moving', 'drag-end', 'resize-start', 'resizeing', 'resize-end',
-    'del-widgets', 'selected-change'
+    'selected-change', 'addNewWidget', 'delNewWidget'
   ],
   setup (props, { emit, slots }) {
 
@@ -169,9 +169,6 @@ export default defineComponent({
           DragContainer,
           {
             value: service.modal.newWidget,
-          },
-          {
-            default: () => [slots.item && slots.item(service.modal.newWidget)]
           }
         )
       }
@@ -240,9 +237,6 @@ export default defineComponent({
           onResizeStart: (widget: DesignWidget) => { emit('resize-start', widget); emit('update:value', service.modal.widgets); },
           onResizeing: (widget: DesignWidget) => { emit('resizeing', widget); emit('update:value', service.modal.widgets);},
           onResizeEnd: (widget: DesignWidget) => { emit('resize-end', widget); emit('update:value', service.modal.widgets);}
-        },
-        {
-          item: slots.item
         }
       )
     }

@@ -20,6 +20,11 @@ export default defineComponent({
       type: String,
       default: '3'
     },
+    // 不允许拖入的组件
+    excludeComponents: {
+      type: Array,
+      default: () => []
+    },
     components: {
       type: Array,
       default: () => []
@@ -28,8 +33,6 @@ export default defineComponent({
   setup(props){
 
     const service = inject(DesignService.token) as DesignService
-
-    const itemSlot = inject(DesignService.itemSlot)
 
     const gridService = new GridService(service, props as unknown as Props)
 
@@ -157,9 +160,6 @@ export default defineComponent({
           },
           onDragStart: gridService.onGridChildDragStart.bind(gridService),
           onDelWidgets: (widget: Array<DesignWidget>) => gridService.onDelWidgets(widget)
-        },
-        {
-          default: () => [itemSlot && itemSlot(<DesignWidget>widget)]
         }
       ))
     }

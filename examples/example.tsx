@@ -22,6 +22,7 @@ export default defineComponent({
 
     const {
       createWidget,
+      changePageSize
     } = useDesignPanel(designPanel)
 
     const service = reactive({
@@ -32,82 +33,16 @@ export default defineComponent({
 
     const widgets = computed(()=> service.model.template?.components)
 
+    // setTimeout(()=>{
+    //   position.value = [700, 1500]
+    //   padding.value = [100, 100, 100, 100]
+    //   // changePageSize(700, 1500, [100, 100, 100, 100])
+    // },5000)
 
-    setTimeout(()=>{
-      service.model.template = {
-        components: [
-          {
-            "id": "34o0epSH-e-SZyDFKHk6w",
-            "x": 10,
-            "y": 60.5,
-            "enableResize": true,
-            "enableDragable": true,
-            "tag": "TextField",
-            "name": "文本",
-            "width": 821,
-            "height": 75,
-            "margin": [
-              0
-            ],
-            "padding": [
-              0
-            ],
-            "state": 0,
-            "moveing": false,
-            "resizing": false,
-            "baseX": 10,
-            "baseY": 60.5,
-            "isOverlapping": false,
-            basicContentCrocessing: {
-              "title": {
-                "fontType": "黑体",
-                "fontSize": 14,
-                "rotation": 0,
-                "bolded": false,
-                "slanting": false,
-                "underline": false
-              },
-              "content": {
-                "fontType": "黑体",
-                "fontSize": 18,
-                "rotation": 0,
-                "bolded": false,
-                "slanting": false,
-                "underline": false
-              }
-            }
-          },
-          {
-            "id": "njLCpAAMgGWjb9WdCDsEu",
-            "x": 10,
-            "y": 225.5,
-            "enableResize": true,
-            "enableDragable": true,
-            "tag": "TextField",
-            "name": "文本",
-            "width": 821,
-            "height": 75,
-            "margin": [
-              0
-            ],
-            "padding": [
-              0
-            ],
-            "state": 1,
-            "moveing": false,
-            "resizing": false,
-            "baseX": 17,
-            "baseY": 225.5,
-            "isOverlapping": false
-          }
-        ]
-      }
-    }, 1000)
+    const position = ref([841, 1189])
 
+    const padding = ref([10, 10, 10, 10])
 
-    setTimeout(()=>{
-      service.model.template = null
-    },3000)
 
     function onDragEnd(widget){
       // console.log('onDragEnd', widget);
@@ -115,7 +50,19 @@ export default defineComponent({
       // updateWidget(widget)
     }
 
-    return { onDragEnd, designPanel, stateMap, createWidget, widgets }
+    const onAddNewWidget = () => {
+      stateMap.set('666', '666666')
+    }
+
+    return {
+      onDragEnd,
+      designPanel,
+      createWidget,
+      widgets,
+      position,
+      padding,
+      onAddNewWidget
+    }
   },
 
   render () {
@@ -123,10 +70,9 @@ export default defineComponent({
       <DesignPanel
         ref="designPanel"
         style="height: 100vh;"
-        stateMap={stateMap}
         value={this.widgets}
-        width={841}
-        height={1189}
+        width={this.position[0]}
+        height={this.position[1]}
         showAlign={true}
         enableAdsorb={true}
         alignWeight={1}
@@ -134,17 +80,18 @@ export default defineComponent({
         showAlignSpan={30}
         adsorbSpan={10}
         showRuler={true}
-        pagePadding={[10]}
+        pagePadding={this.padding}
         showDelBut={true}
         v-slots={{
           header: () => <Header />,
           left: () => <WidgetPanel onCreateWidget={(widget: Widget) => this.createWidget(widget)} />,
           right: () => <div style="width:200px; background: #ffffff"><OperationPanel></OperationPanel></div>,
           item: (widget:any) => h(Package[widget.tag], widget)
-            // <input style="width: 100%;box-sizing: border-box;"></input>
         }}
         onDrag-end={(widget) => this.onDragEnd(widget)}
-        onDelWidgets={(w)=>console.log('onDelWidgets',w)}
+        onAddNewWidget={(w)=>this.onAddNewWidget(w)}
+        onDelNewWidget={(w)=>console.log('onDelNewWidget',w)}
+        onDeleted={(w)=>console.log('onDeleted',w)}
         onSelectedChange={(ws)=>console.log('onSelectedChange',ws)}
         >
       </DesignPanel>
