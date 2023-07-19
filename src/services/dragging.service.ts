@@ -40,12 +40,8 @@ export default class DraggingService {
       } else {
         this.service.setSelected([yWidget])
       }
-
-
-
     }
 
-    yWidget && this.service.emitter.emit('onMousedown', yWidget)
 
     this.modal.beginDragging = false
     this.orgPosition.clear()
@@ -118,10 +114,6 @@ export default class DraggingService {
 
     this.modal.beginDragging = false
 
-    if(this.service.modal.selecteds.length===1 && !this.modal.isOverlapping){
-      this.service.emitter.emit('onAddWidget', this.service.modal.selecteds[0])
-    }
-
     for (let i = 0; i < this.service.modal.selecteds.length; i++) {
       const yWidget = this.service.modal.selecteds[i]
       yWidget.set('moveing', false)
@@ -136,6 +128,10 @@ export default class DraggingService {
         yWidget.set('isOverlapping', false)
       }
       this.emit('drag-end', yWidget.toJSON())
+    }
+
+    if(this.service.modal.selecteds.length===1){
+      this.service.emitter.emit('onAddWidget', this.service.modal.selecteds[0])
     }
 
     this.modal.isOverlapping = false

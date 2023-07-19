@@ -1,18 +1,16 @@
 import { DesignPanel, useDesignPanel} from "../src";
 // import {DesignPanel, useDesignPanel} from "../dist/vue3-free-layout.esm";
 // import "../dist/vue3-free-layout.esm.css"
-import { defineComponent, Ref, ref, h, onMounted, computed, reactive } from "vue";
+import { defineComponent, Ref, ref, h, onMounted, computed, reactive, watch } from "vue";
 import Header from './header'
 import WidgetPanel from './widget_panel'
 import { Package } from "./package/index";
-import { stateMap } from "./package/hooks";
 import OperationPanel from "./operation_panel.vue";
 import { DesignPanelRef, Widget } from '@/types'
 import './style.less'
 
 export default defineComponent({
   name: 'ExamplePanel',
-
   components: {
     DesignPanel
   },
@@ -33,11 +31,18 @@ export default defineComponent({
 
     const widgets = computed(()=> service.model.template?.components)
 
-    // setTimeout(()=>{
-    //   position.value = [700, 1500]
-    //   padding.value = [100, 100, 100, 100]
-    //   // changePageSize(700, 1500, [100, 100, 100, 100])
-    // },5000)
+    const height = ref(1189)
+
+    watch(height, () => {
+      console.log("watch(height", height.value);
+    })
+
+    setTimeout(()=>{
+      // position.value = [700, 1500]
+      // padding.value = [100, 100, 100, 100]
+      // changePageSize(700, 1500, [100, 100, 100, 100])
+      height.value = 1500
+    },1000)
 
     const position = ref([841, 1189])
 
@@ -51,10 +56,10 @@ export default defineComponent({
     }
 
     const onAddNewWidget = () => {
-      stateMap.set('666', '666666')
     }
 
     return {
+      height,
       onDragEnd,
       designPanel,
       createWidget,
@@ -72,7 +77,7 @@ export default defineComponent({
         style="height: 100vh;"
         value={this.widgets}
         width={this.position[0]}
-        height={this.position[1]}
+        v-model:height={this.height}
         showAlign={true}
         enableAdsorb={true}
         alignWeight={1}
@@ -93,6 +98,7 @@ export default defineComponent({
         onDelNewWidget={(w)=>console.log('onDelNewWidget',w)}
         onDeleted={(w)=>console.log('onDeleted',w)}
         onSelectedChange={(ws)=>console.log('onSelectedChange',ws)}
+        onAddHeight={(height, span)=>console.log('onAddHeight', height, span)}
         >
       </DesignPanel>
     )

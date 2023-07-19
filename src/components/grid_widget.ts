@@ -12,6 +12,10 @@ export default defineComponent({
       type: String,
       required: true
     },
+    tag: {
+      type: String,
+      required: true
+    },
     rowSpan: {
       type: String,
       default: '5'
@@ -36,7 +40,8 @@ export default defineComponent({
 
     const gridService = new GridService(service, props as unknown as Props)
 
-    const gridWidget = gridService.getGridWidget()
+    gridService.initGridGap(Number(props.rowSpan), Number(props.colSpan),
+      gridService.gridWidget.width, gridService.gridWidget.height)
 
     gridService.initGridWidgets()
     // 监听行列变化
@@ -44,43 +49,29 @@ export default defineComponent({
       ()=>props.rowSpan,
       ()=>props.colSpan
     ], ([rowSpan, colSpan])=>{
-      gridService.setGridGap(rowSpan, colSpan, gridWidget.width, gridWidget.height)
-      if(gridWidget.components?.length!==0){
-        gridService.resetGridWidgets()
-      }
+      gridService.initGridGap(rowSpan, colSpan, gridService.gridWidget.width, gridService.gridWidget.height)
+      gridService.resetGridWidgets()
     })
 
     // 监听宽高变化
     watch([
-      ()=>gridWidget.width,
-      ()=>gridWidget.height
+      ()=>gridService.gridWidget.width,
+      ()=>gridService.gridWidget.height
     ], ([width, height])=>{
-      gridService.setGridGap(props.rowSpan, props.colSpan, width, height)
-      if(gridWidget.components?.length!==0){
-        gridService.resetGridWidgets()
-      }
+      gridService.initGridGap(props.rowSpan, props.colSpan, width, height)
+      gridService.resetGridWidgets()
     })
-
-    gridService.setGridGap(Number(props.rowSpan), Number(props.colSpan), gridWidget.width, gridWidget.height)
-
-
 
     const setNotOverlapInGrid = gridService.setNotOverlapInGrid.bind(gridService)
     const onAddWidget = gridService.onAddWidget.bind(gridService)
-    const setWidgetToGridChild = gridService.setWidgetToGridChild.bind(gridService)
-    const onMousedown = gridService.onMousedown.bind(gridService)
     const onDelWidgets = gridService.onDelWidgets.bind(gridService)
 
     function formatWidget(){
-      gridService.setWidgetToGridChild()
       service.clearnSelected()
     }
 
     // 监听widget拖动
     service.emitter.on('onAddWidget', onAddWidget)
-    service.emitter.on('onMousedown', onMousedown)
-    service.emitter.on('onBGMousedown', setWidgetToGridChild)
-    service.emitter.on('onCreateWidget',setWidgetToGridChild)
     service.emitter.on('delWidgets', onDelWidgets)
     service.emitter.on('formatWidget',formatWidget)
 
@@ -88,9 +79,6 @@ export default defineComponent({
 
     onBeforeUnmount(()=>{
       service.emitter.off('onAddWidget', onAddWidget)
-      service.emitter.off('onMousedown', onMousedown)
-      service.emitter.off('onBGMousedown', setWidgetToGridChild)
-      service.emitter.off('onCreateWidget', setWidgetToGridChild)
       service.emitter.off('delWidgets', onDelWidgets)
       service.emitter.off('formatWidget',formatWidget)
       service.isNotOverlapInGridPublisher.off(setNotOverlapInGrid)
@@ -105,7 +93,7 @@ export default defineComponent({
               top: item.y + 'px',
               left: 0,
               height: 0,
-              width: item.width + 'px',
+              width: item.width - 1 + 'px',
               borderBottom: '1px dashed rgb(201, 201, 201)'
             }
           }
@@ -128,28 +116,23 @@ export default defineComponent({
       )
     }
     function renderGridItems(){
-      return gridService.model.gridItems.map((item,index)=>
-        h('div', {
+      return gridService.model.gridItems.map((item,index)=>{
+        return h('div', {
             style:{
               position: 'absolute',
               left: item.x + 'px',
               top: item.y + 'px',
               height: item.height+'px',
               width: item.width+'px',
-              background: item.active?'#ecf4fc':''
+              background: item.active?'#ecf4fc':'',
             }
           },
-          [
-            // h('div',{},[index+'']),
-            // h('div',{},[item.widget?.id+'']),
-            // h('div',{},[item.inGrid+'']),
-          ]
+          []
         )
-      )
+      })
     }
     function renderGridWidgets(){
-      if(!gridWidget.components) return null
-      return gridWidget.components.map(widget=>
+      return gridService.gridChildWidgets.value.map(widget=>
         // @ts-ignore
         h(DragContainer,
         {
@@ -164,21 +147,26 @@ export default defineComponent({
       ))
     }
     return {
-      gridWidget,
+      gridService,
       renderGridRowGap,
       renderGridColGap,
       renderGridItems,
-      renderGridWidgets
+      renderGridWidgets,
+      getComponents: () => gridService.gridChildWidgets.value,
+      getGridItems: () => gridService.model.gridItems,
+      setGridRowGap: gridService.setGridRowGap.bind(gridService),
+      getBoundingClientRect: () => gridService.containerRef?.getBoundingClientRect()
     }
   },
   render(){
     return h(
       'div',
       {
+        ref: (el: any) => this.gridService.containerRef = el,
         style: {
           position: 'relative',
-          width: 'calc(100% - 2px)',
-          height: 'calc(100% - 2px)',
+          width: '100%',
+          height: this.gridService.model.height + 'px',
           border: '1px solid #9a9a9a'
         }
       },

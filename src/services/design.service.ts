@@ -68,8 +68,8 @@ export default class DesignService {
   emitter = mitt<Record<string, any>>()
 
   constructor (props: any,
-               public emit: (event:'page-resized' | 'drag-start' | 'drag-moving' |
-               'drag-end' | 'selected-change' | 'deleted' | 'addNewWidget' | 'delNewWidget',
+               public emit: (event:'page-resized' | 'drag-start' | 'drag-moving' | 'drag-end' |
+               'selected-change' | 'deleted' | 'addNewWidget' | 'delNewWidget' | 'addHeight',
                ...args: any)=>void,
                slots: any) {
     provide(DesignService.token, this)
@@ -112,13 +112,6 @@ export default class DesignService {
 
     this.modal.canvaseRect.height = height + DesignService.SPAN * 2 / this.modal.scale
 
-    // 监听页面宽高修改
-    watch([()=>props.width, ()=>props.height, () => props.pagePadding], (newVal, oldVal)=>{
-      console.log("监听页面宽高修改", props.width, props.height, props.pagePadding);
-      console.log("监听页面宽高修改22", newVal, oldVal);
-      this.changePageSize(props.width, props.height, props.pagePadding)
-    })
-
     watch(()=> props.value, ()=>this.initWidgets(props.value))
   }
 
@@ -146,7 +139,6 @@ export default class DesignService {
 
   createWidgetHandler (widget: Widget) {
     this.selectedNewWidget = widget
-    this.emitter.emit('onCreateWidget')
     window.addEventListener('mousemove', this.newWidgetDragingRegistHandler, true)
     window.addEventListener('mouseup', this.newWidgetDropRegistHandler, true)
   }
@@ -230,7 +222,6 @@ export default class DesignService {
   deleteWidget(id: string){
     const widgetIdx = this.syncService.yWidget.toArray().findIndex(item=>item.get('id') === id)
     if(widgetIdx===-1) return
-    const widget = this.syncService.yWidget.get(widgetIdx).toJSON()
     this.syncService.yWidget.delete(widgetIdx, 1)
     this.alignLineService?.delBoundaryLine(id)
   }

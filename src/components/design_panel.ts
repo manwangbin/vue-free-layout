@@ -107,7 +107,7 @@ export default defineComponent({
     }
   },
 
-  emits: ['update:value', 'page-resized', 'added', 'deleted', 'drag-start',
+  emits: ['update:value', 'addHeight', 'page-resized', 'added', 'deleted', 'drag-start',
     'drag-moving', 'drag-end', 'resize-start', 'resizeing', 'resize-end',
     'selected-change', 'addNewWidget', 'delNewWidget'
   ],

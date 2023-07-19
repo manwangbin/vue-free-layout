@@ -44,6 +44,7 @@ export default class UtilsService{
       this.service.modal.pageRect.height += span
       this.service.modal.pageRect.cheight += span
       this.service.alignLineService?.setPaddingLine()
+      this.service.emit("addHeight", this.service.modal.pageRect.height, span)
     }
   }
 

@@ -97,7 +97,6 @@ export default defineComponent({
     const bgmousedownHandler = (event: MouseEvent) => {
       if(event.button!==0) return
       designService.clearnSelected()
-      designService.emitter.emit('onBGMousedown')
       selectedArea.value.begin = converClientP2PanelP(event)
       window.addEventListener('mousemove', bgmousemoveHandler, true)
       window.addEventListener('mouseup', bgmouseupHandler, true)

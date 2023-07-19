@@ -61,7 +61,11 @@ export default defineComponent({
           'div',
           {
             id: props.value.id + '_cover',
-            class: props.value.state === 3 ? 'cover moving' : 'cover',
+            class: {
+              cover: true,
+              moving: props.value.state === 3,
+              hover: props.value.enableDragable && props.value.enableResize
+            },
             style: {
               borderRadius: props.radius + 'px',
               background: (service.modal.selecteds.length===1||props.value.state === -1)
@@ -112,6 +116,7 @@ export default defineComponent({
 
   render() {
     return h(
+      // @ts-ignore
       "div",
       {
         ref: 'container',
