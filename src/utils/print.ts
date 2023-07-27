@@ -1,57 +1,61 @@
 import Browser from "./browser";
 
-interface Option{
-  domId: string,
-  width: number,
-  height: number
+export interface PrintOption{
+  domId: string;
+  width: number;
+  height: number;
+  documentTitle?: string,
+  styleStr?: string;
+  cssLinks?: Array<string>
 }
 
-export function printHTML({domId,width,height}: Option){
-  let canvas = document.getElementById(domId)!
-  if(!canvas) {
-    console.error('canvas is '+ canvas);
+export function printHTML({ domId, width, height, documentTitle, styleStr, cssLinks }: PrintOption){
+  let page = document.getElementById(domId)!
+  if(!page) {
+    console.error('canvas is '+ page);
     return
   }
-  canvas = cloneElement(canvas)
-  canvas.style.left = '0'
-  canvas.style.top = '0'
-  canvas.style.overflow = 'hidden'
+  page = cloneElement(page)
+  page.style.left = '0'
+  page.style.top = '0'
+  page.style.overflow = 'hidden'
 
   const iframe = document.createElement('iframe')
   iframe.setAttribute('id', 'free-layout-iframe')
-  iframe.style.display = 'none'
+  // iframe.style.display = 'none'
   iframe.style.width = width + 'px'
   iframe.style.height = height + 'px'
   iframe.style.border='none'
+  iframe.srcdoc = '<html><head><title>' + (documentTitle || '') + '</title>'
+  if (cssLinks) {
+    cssLinks.forEach(file => {
+      iframe.srcdoc += '<link rel="stylesheet" href="' + file + '">'
+    })
+  }
+  iframe.srcdoc += '</head><body></body></html>'
 
   document.body.appendChild(iframe)
   iframe.onload = ()=>{
-    iframe.contentWindow!.document.body.appendChild(canvas)
+    // 放置页面
+    iframe.contentWindow!.document.body.appendChild(page)
+    // 设置style
     const style = document.createElement('style')
     style.innerText = `
     html,body {
       padding: 0;
       margin:0;
     }
-    // @media print {
-    //   @page {
-    //     size:  21cm 29.7cm;
-    //     margin: 0;
-    //     padding: 0;
-    //   }
-    //
-    //   .noprint {
-    //     display: none;
-    //   }
-    // }
     #drawer{
       position: relative;
       overflow: hidden;
+      scale: 0.5;
+      top: -28px !important;
+      left: -94px !important;
     }
     .drag_container{
       position: absolute;
     }
-    `
+    ` + (styleStr || '')
     iframe.contentWindow!.document.body.appendChild(style)
     performPrint(iframe)
   }
@@ -81,7 +85,6 @@ function performPrint (iframeElement: any) {
       iframeElement.style.visibility = 'hidden'
       iframeElement.style.left = '-1px'
     }
-
     cleanUp()
   }
 }

@@ -37,6 +37,7 @@ export default class UtilsService{
 
   // 拖动widget时自动拓展高度
   autoHeight(bottom: number){
+    if (!this.service.props.autoHeight) return
     // 自动高度
     let span = bottom - this.service.modal.pageRect.height+this.service.modal.pageRect.padding[2]
     if(span>=0){
@@ -71,15 +72,21 @@ export default class UtilsService{
     if(left + (right-left)/2 < 0 || top + (bottom-top)/2 < 0 || right - (right-left)/2>pageRect.width){
       return false
     }
+    // 拖动的组件每个都允许覆盖则返回true
+    if(widgets.every(item=>item.enableOverlap)) return true
     return this.service.modal.widgets.every(widget=>{
-      if(widget.enableOverlap)return true
+      if(widget.enableOverlap) return true
       // 排除被选中的widget
       if(widgets.some(item=>item.id===widget.id)) return true
 
-      return !(right > widget.x &&
-        widget.x + widget.width > left &&
-        bottom > widget.y &&
-        widget.y + widget.height > top);
+      let span = this.service.props.adsorbSpan - 1
+
+      span = span < 0 ? 0 : span
+
+      return !(right > widget.x + span &&
+        widget.x + widget.width > left + span &&
+        bottom > widget.y + span &&
+        widget.y + widget.height > top + span);
     })
   }
 

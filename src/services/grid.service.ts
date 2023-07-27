@@ -7,6 +7,7 @@ import DraggingService from "@/services/dragging.service";
 export interface Props {
   id: string;
   tag: string;
+  active: DesignWidget | null;
   rowSpan: number;
   colSpan: number;
   excludeComponents: Array<string>;
@@ -49,7 +50,7 @@ export default class GridService{
     return widgets
   })
 
-  constructor(public service: DesignService, public props: Props) {
+  constructor(public service: DesignService, public props: Props, public emit: (event: 'update:active', ...args: any)=>void) {
     this.gridWidget = this.getGridWidget()
 
     this.model = reactive({
@@ -176,7 +177,12 @@ export default class GridService{
   // 监听组件放下(已排除重叠)
   onAddWidget(yWidget: YWidget){
     const widget = yWidget.toJSON() as DesignWidget
+    // 如果添加的组件是自己则不做处理
     if(widget.id === this.props.id) return
+    // 如果是排除的组件且允许覆盖则不做处理
+    const exclude = this.props.excludeComponents.includes(widget.tag)
+    if(exclude && widget.enableOverlap) return
+
     const centerPoint = this.getCenterPoint(widget)
     if(this.pointInArea(centerPoint, this.gridWidget)){
       // 判断在哪个格子中
@@ -205,11 +211,11 @@ export default class GridService{
 
   // 监听子组件被拖拽,将网格子组件设置为全局并选中
   onGridChildDragStart(event: MouseEvent, widget: DesignWidget){
-    const { yWidget: gridYWidget } = this.service.utils.getYWidgetById(this.props.id)
     // 删除子组件并创建yWidget添加到全局
     const {x, y} = this.gridP2CanvasP(widget)
     const yWidget = this.service.syncService.createWidget({
       ...widget,
+      state: 3,
       x, y
     })
     this.service.syncService.yWidget.push([yWidget])
@@ -222,22 +228,8 @@ export default class GridService{
 
     const draggingService = new DraggingService(this.service, ()=>{})
     draggingService.mousedownHandler(event, yWidget)
-  }
 
-  onDelWidgets(widgets: Array<DesignWidget>){
-    widgets.forEach(widget=>{
-      const idx = this.model.gridItems.findIndex(item=>item.widget?.id === widget.id)
-      if(idx!==-1){
-        this.model.gridItems[idx].widget = null
-      }
-      const { yWidget: gridYWidget } = this.service.utils.getYWidgetById(this.props.id)
-      const components: Array<DesignWidget> = gridYWidget?.get('components') || []
-      const cIdx = components.findIndex(item=>item.id === widget.id)
-      if(cIdx!==-1){
-        components.splice(cIdx, 1)
-        gridYWidget?.set('components', components)
-      }
-    })
+    this.emit("update:active", null)
   }
 
   // 将拖入网格的组件设置到对应网格位置
@@ -254,18 +246,27 @@ export default class GridService{
     this.service.deleteWidget(yWidget.get("id"))
     this.service.modal.selecteds = []
     gridItem.widget = widget as DesignWidget
+    this.emit("update:active", widget)
+    const { yWidget: gridYWidget } = this.service.utils.getYWidgetById(this.props.id)
+    this.service.setSelected([gridYWidget!])
   }
 
   // 设置拖动的组件是否在网格中覆盖了其他组件 覆盖false 不覆盖true
   setNotOverlapInGrid(widgets: Array<DesignWidget>): boolean{
+    // 如果是拖动多个组件且不包含自己返回false
     if(widgets.length!==1) {
       return !!widgets.find(w=>w.id === this.props.id)
     }
     const widget = widgets[0]
+    // 如果拖动的是组件则返回true
     if(widget.id === this.props.id) return true
+    const exclude = this.props.excludeComponents.includes(widget.tag)
+    // 如果是排除的组件且允许覆盖则返回true
+    if(exclude && widget.enableOverlap) return true
     const centerPoint = this.getCenterPoint(widget)
     if(this.pointInArea(centerPoint, this.gridWidget)){
-      if(this.props.excludeComponents.includes(widget.tag)) return false;
+      // 如果拖动到网格上且是排除的返回false
+      if(exclude) return false;
       // 判断在哪个格子中
       return this.model.gridItems.every((gridItems,index)=>{
         const point = this.canvasP2GridP(centerPoint)
@@ -292,6 +293,18 @@ export default class GridService{
         this.gridWidget.x + this.gridWidget.width > widget.x &&
         widget.y + widget.height > this.gridWidget.y &&
         this.gridWidget.y + this.gridWidget.height > widget.y);
+    }
+  }
+
+  deleteWidget(id: string) {
+    for (const item of this.model.gridItems) {
+      if(item.widget && item.widget.id === id) {
+        item.widget = null
+        break
+      }
+    }
+    if(this.props.active && this.props.active.id === id){
+      this.emit("update:active", null)
     }
   }
 

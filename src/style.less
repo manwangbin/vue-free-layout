@@ -52,7 +52,7 @@
 
           .dragging {
             cursor: move;
-            z-index: 100;
+            z-index: 2000 !important;
             box-shadow: 0 0 2px @-widget-selected-shadow-color;
           }
 
@@ -78,7 +78,6 @@
     .cover {
       width: 100%;
       height: 100%;
-      z-index: 1500;
       padding: 0;
       margin: 0;
       position: absolute;
@@ -101,7 +100,7 @@
 
   .dragging {
     cursor: move;
-    z-index: 999;
+    z-index: 2000 !important;
     box-shadow: 0 0 6px @-widget-selected-shadow-color;
 
     transition: 0.1s left, 0.1s top;

@@ -39,7 +39,6 @@ export default defineComponent({
         designService.deleteWidget(yWidget.get('id'))
       })
 
-      designService.emitter.emit('delWidgets', delWidgets)
       designService.emit('deleted', delWidgets)
       designService.modal.selecteds = []
     }

@@ -17,3 +17,16 @@ export function deepClone<T=any>(v: T): T {
   }
   return result as T
 }
+
+export function debounce (fn:Function, delay:number) {
+  let timer:NodeJS.Timeout | null = null
+  return function () {
+    // @ts-ignore
+    const self = this
+    const args = arguments
+    timer && clearTimeout(timer)
+    timer = setTimeout(function () {
+      fn.apply(self, args)
+    }, delay)
+  }
+}

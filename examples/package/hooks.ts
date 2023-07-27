@@ -27,5 +27,5 @@ export function useOptStateMap<S>(id: Ref<string>){
     flush: 'post'
   })
 
-  return state
+  return state as Ref<S>
 }

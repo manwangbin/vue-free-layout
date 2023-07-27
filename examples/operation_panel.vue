@@ -3,7 +3,10 @@
   <div class="operation_panel">
     <div class="opt-group">
       <div class="opt-content">
-        <div class="item" @click="print">打印</div>
+        <div class="item" @click="() => print({
+        cssLinks: ['http://172.16.14.206:5173/test.css'],
+        documentTitle: 'hahahha'
+        })">打印</div>
         <div class="item" @click="getWidgets">获取widget列表</div>
       </div>
       <div class="opt-title">纸张</div>
@@ -12,6 +15,7 @@
                 :options="pageSize"
                 @change="pageSizeChange"></Select>
       </div>
+      <button @click="dddd">---</button>
       <div class="opt-title">页边距</div>
       <div class="opt-content">
         <Select v-model="model.pagePadding"
@@ -32,10 +36,10 @@
     </div>
     <div class="opt-group" v-if="designModal.selecteds.length>1">
       <div class="title">标签布局</div>
-      <div class="opt-content">
-        <RadioButton :options="layoutOpt"
-                     @change="layoutChange"></RadioButton>
-      </div>
+<!--      <div class="opt-content">-->
+<!--        <RadioButton :options="layoutOpt"-->
+<!--                     @change="layoutChange"></RadioButton>-->
+<!--      </div>-->
     </div>
     <component v-if="widget"
                :is="Package[widget.tag+'Opt']" v-bind="widget"></component>
@@ -50,6 +54,12 @@ import { useDesignPanel } from "../src";
 // import { useDesignPanel } from "../dist/vue3-free-layout.esm";
 import { computed, reactive } from "vue";
 import { pagePadding, layoutOpt, pageSize } from "./package/utils/options";
+
+let a = 30
+
+function dddd(){
+  changePageSize(undefined, undefined, [--a, 30, 30, 30])
+}
 
 const {
   designModal,

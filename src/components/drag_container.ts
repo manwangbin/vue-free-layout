@@ -127,7 +127,7 @@ export default defineComponent({
           height: this.$props.value.height + 'px',
           borderRadius: this.$props.radius + 'px',
           // 转成string，防止 levels为0 时 结果为false
-          zIndex: this.state===-1 ? 2000: String(this.levels) || 10
+          zIndex: this.state===-1 ? 2000: String(this.levels) || 100
         }
       },
       [

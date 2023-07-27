@@ -5,6 +5,7 @@
       height: '100%'
     }">
     <div v-if="!state.src"
+         class="test"
         :style="{
           display: 'flex',
           justifyContent: 'center',

@@ -11,7 +11,6 @@ import '../style.less'
 const RULER_WIDTH = 24
 export default defineComponent({
   name: 'DesignPanel',
-
   props: {
     value: {
       type: Array as PropType<Array<Widget>>,
@@ -102,6 +101,12 @@ export default defineComponent({
 
     // 是否显示删除按钮
     showDelBut: {
+      type: Boolean,
+      default: false
+    },
+
+    // 组件拖动到底部时是否拓展高度
+    autoHeight: {
       type: Boolean,
       default: false
     }

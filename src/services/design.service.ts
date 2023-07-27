@@ -1,11 +1,12 @@
 import { DesignWidget, Point, Widget } from "../types";
-import { computed } from '@vue/reactivity'
-import { Component, InjectionKey, provide, reactive, ref, Ref, toRaw, watch } from "vue";
+import { computed } from "@vue/reactivity";
+import { Component, InjectionKey, provide, reactive, ref, Ref, watch } from "vue";
 import AlignmentLineService from "@/services/alignmentLine.service";
 import SynchronizeService, { YWidget } from "@/services/synchronize.service";
-import mitt from 'mitt'
+import mitt from "mitt";
 import UtilsService from "@/services/utils.service";
 import { Publisher } from "@/utils/publisher";
+import { debounce } from "@/utils/util";
 
 export interface Modal {
   newWidget?: DesignWidget;
@@ -67,7 +68,9 @@ export default class DesignService {
 
   emitter = mitt<Record<string, any>>()
 
-  constructor (props: any,
+  handlerSelectedChange
+
+  constructor (public props: any,
                public emit: (event:'page-resized' | 'drag-start' | 'drag-moving' | 'drag-end' |
                'selected-change' | 'deleted' | 'addNewWidget' | 'delNewWidget' | 'addHeight',
                ...args: any)=>void,
@@ -113,6 +116,8 @@ export default class DesignService {
     this.modal.canvaseRect.height = height + DesignService.SPAN * 2 / this.modal.scale
 
     watch(()=> props.value, ()=>this.initWidgets(props.value))
+
+    this.handlerSelectedChange = this.handlerSelecteds()
   }
 
   initWidgets(widgets: Array<Widget>) {
@@ -135,6 +140,33 @@ export default class DesignService {
         ))
       this.syncService.yWidget.push(w)
     }
+  }
+
+  handlerSelecteds() {
+    let selectedIds: string[] = []
+
+    const handler = () => {
+      selectedIds = []
+      return this.modal.selecteds.map(item=>{
+        selectedIds.push(item.get("id"))
+        return item.toJSON()
+      })
+    }
+    return debounce(() => {
+      if (this.modal.selecteds.length !== selectedIds.length) {
+        const selecteds = handler()
+        this.emit('selected-change', selecteds)
+        return
+      }
+      for (const item of this.modal.selecteds) {
+        const id = item.get("id")
+        if (!selectedIds.includes(id)) {
+          const selecteds = handler()
+          this.emit('selected-change', selecteds)
+          return;
+        }
+      }
+    }, 100)
   }
 
   createWidgetHandler (widget: Widget) {
@@ -273,7 +305,7 @@ export default class DesignService {
     if (widget) {
       widget.set('state', 1)
       this.modal.selecteds.push(widget)
-      this.emit('selected-change', this.modal.selecteds.map(item=>item.toJSON()))
+      this.handlerSelectedChange()
     }
   }
 
@@ -285,7 +317,7 @@ export default class DesignService {
         widgets[i].set('state', 1)
       }
       this.modal.selecteds.push(...widgets)
-      this.emit('selected-change', this.modal.selecteds.map(item=>item.toJSON()))
+      this.handlerSelectedChange()
     }
   }
 
@@ -296,13 +328,14 @@ export default class DesignService {
       }
 
       this.modal.selecteds.splice(0, this.modal.selecteds.length)
-      this.emit('selected-change', [])
+      this.handlerSelectedChange()
     }
   }
 
   // 删除选中的widget
   deleteSelected(id: string){
     const idx = this.modal.selecteds.findIndex(widget=>widget.get('id')===id)
+    if(idx === -1) return
     this.modal.selecteds[idx].set('state', 0)
     this.modal.selecteds.splice(idx, 1)
   }
@@ -345,12 +378,9 @@ export default class DesignService {
     // 重新设置内边距线
     this.alignLineService.setPaddingLine()
     this.utils.recountPage()
-
   }
 
   getPageWidgets(){
-    // 通知各个组件格式好数据
-    this.emitter.emit('formatWidget')
     return this.modal.widgets;
   }
 }

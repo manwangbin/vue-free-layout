@@ -1,33 +1,45 @@
 <template>
-  <GridWidget ref="gridLayoutRef"
+  <GridWidget :ref="(el) => service.gridLayoutRef = el"
+              v-model:active="service.active"
               :id="props.id"
               tag="GridLayout"
               :excludeComponents="['GridLayout', 'LineBetween']"
-              :components="components"
+              :components="state.components"
               :rowSpan="state.rowSpan"
-              :colSpan="state.colSpan"></GridWidget>
+              :colSpan="state.colSpan"
+              :gridBorder="state.gridBorder"></GridWidget>
   <button @click="getComp">getComp</button>
   <button @click="setGridRowGap">setGridRowGap</button>
+  <button @click="setGridBorder">setGridBorder</button>
+  <div>{{props.state}}</div>
+  <div>{{service.active}}</div>
 </template>
 
 <script setup lang="ts">
 import { GridWidget } from "@/index";
 import { GridLayoutService } from "./GridLayoutService";
 import { useStateMap } from "../hooks";
-import { ref, useAttrs } from "vue";
+import { ref, useAttrs, watch } from "vue";
 
 const props = defineProps<{
   id: string,
+  state: number
 }>()
+
+watch(()=>props.state, (state) => {
+  if(state===0){
+    service.active = null
+  }
+})
 
 const attrs = useAttrs()
 
-const state = useStateMap<GridLayoutService>(props.id, new GridLayoutService(props.id, attrs))
+console.log('attrs',attrs);
 
-const gridLayoutRef = ref()
+const service = useStateMap<GridLayoutService>(props.id, new GridLayoutService(props.id, attrs))
 
 function getComp(){
-  gridLayoutRef.value.getGridItems()
+  service.gridLayoutRef.getGridItems()
 }
 
 function setGridRowGap(){
@@ -45,11 +57,20 @@ function setGridRowGap(){
       "height": 77.54559326171875
     }
   ].forEach((item) => {
-    gridLayoutRef.value.setGridRowGap(item.row, item.height);
+    service.gridLayoutRef.setGridRowGap(item.row, item.height);
   })
 }
 
-const components = []
+function setGridBorder(){
+  service.gridBorder = [
+    'INNER_HORIZONTAL',
+    // 'INNER_VERTICAL',
+    // 'UP',
+    // 'DOWN',
+    'LEFT',
+    'RIGHT'
+  ]
+}
 
 </script>
 

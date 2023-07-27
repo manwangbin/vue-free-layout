@@ -11,6 +11,7 @@ export const widgetOpt = {
   height: 50,
   margin: [0],
   padding: [0],
+  enableOverlap: true
 }
 
 

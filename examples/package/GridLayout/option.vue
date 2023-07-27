@@ -7,12 +7,13 @@
       <span>列</span>
       <Input v-model="state.colSpan" type="number"></Input>
     </div>
+    <button @click="deleteWidget">deleteWidget</button>
   </div>
 </template>
 
 <script setup lang="ts">
 import Input from "../../components/Input/index.vue";
-import { toRef } from "vue";
+import { Ref, toRef } from "vue";
 import { GridLayoutService } from "./GridLayoutService";
 import { useOptStateMap } from "../hooks";
 
@@ -21,6 +22,10 @@ const props = defineProps<{
 }>()
 
 const state = useOptStateMap<GridLayoutService>(toRef(props,'id'))
+
+function deleteWidget(){
+  state.value?.gridLayoutRef.deleteWidget(state.value.active.id)
+}
 
 </script>
 

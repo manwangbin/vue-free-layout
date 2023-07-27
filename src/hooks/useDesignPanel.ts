@@ -1,7 +1,7 @@
 import { computed, ComputedRef, inject, nextTick, onBeforeUnmount, Ref } from "vue";
 import { DesignPanelRef, DesignWidget, Widget } from "@/types";
 import DesignService, { Modal } from "@/services/design.service";
-import { printHTML } from "@/utils/print";
+import { printHTML, PrintOption } from "@/utils/print";
 
 
 export function useDesignPanel(designPanel?: Ref<DesignPanelRef|null>){
@@ -85,23 +85,16 @@ export function useDesignPanel(designPanel?: Ref<DesignPanelRef|null>){
       height || pageRect.height,
       padding || pageRect.padding
     )
-    // service.value?.resizePage({
-    //   newWidth: Number(width),
-    //   newHeight: Number(height),
-    //   oldWidth: designModal.value.pageRect.width,
-    //   oldHeight: designModal.value.pageRect.height,
-    //   newPadding: designModal.value.pageRect.padding,
-    //   oldPadding: designModal.value.pageRect.padding
-    // })
   }
 
-  function print(){
+  function print(option?: Partial<PrintOption>){
     service.value?.setSelected([])
     nextTick().then(()=>{
       printHTML({
         domId: 'drawer',
         width: designModal.value.pageRect.width,
-        height: designModal.value.pageRect.height
+        height: designModal.value.pageRect.height,
+        ...option
       })
     })
   }

@@ -15,17 +15,29 @@ export const widgetOpt = {
 }
 
 export class GridLayoutService extends FieldService{
+  gridLayoutRef: any = null;
+  active: any = null
   id: string
   label = ''
   value = ''
   rowSpan = '5'
   colSpan = '3'
+  components = []
+  gridBorder = [
+    'INNER_HORIZONTAL',
+    'INNER_VERTICAL',
+    'UP',
+    'DOWN',
+    'LEFT',
+    'RIGHT'
+  ]
 
   constructor(id: string, attrs: any) {
     super(attrs);
     this.id = id
     attrs.rowSpan && (this.rowSpan = attrs.rowSpan)
     attrs.colSpan  && (this.colSpan = attrs.colSpan)
+    attrs.components && (this.components = attrs.components)
   }
 
   getState(){
