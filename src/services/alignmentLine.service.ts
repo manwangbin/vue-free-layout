@@ -50,7 +50,6 @@ export default class AlignmentLineService {
     // 初始化边界线
     this.boundaryLine = reactive([])
     designService.emitter.on('onLayout', this.setPaddingLine.bind(this))
-    console.log("this.option.adsorbSpan",this.option.adsorbSpan);
   }
 
   setPaddingLine(){

@@ -48,9 +48,6 @@ export function printHTML({ domId, width, height, documentTitle, styleStr, cssLi
     #drawer{
       position: relative;
       overflow: hidden;
-      scale: 0.5;
-      top: -28px !important;
-      left: -94px !important;
     }
     .drag_container{
       position: absolute;

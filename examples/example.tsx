@@ -18,7 +18,6 @@ export default defineComponent({
 
     const {
       createWidget,
-      changePageSize
     } = useDesignPanel(designPanel)
 
     const service = reactive({
@@ -36,15 +35,11 @@ export default defineComponent({
     const padding = ref([10, 10, 10, 10])
 
 
-    function onDragEnd(widget){
-    }
-
     const onAddNewWidget = () => {
     }
 
     return {
       height,
-      onDragEnd,
       designPanel,
       createWidget,
       widgets,
