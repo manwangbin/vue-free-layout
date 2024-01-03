@@ -3,10 +3,7 @@
   <div class="operation_panel">
     <div class="opt-group">
       <div class="opt-content">
-        <div class="item" @click="() => print({
-        cssLinks: ['http://172.16.14.206:5173/test.css'],
-        documentTitle: 'hahahha'
-        })">打印</div>
+        <div class="item" @click="() => print()">打印</div>
         <div class="item" @click="getWidgets">获取widget列表</div>
       </div>
       <div class="opt-title">纸张</div>
